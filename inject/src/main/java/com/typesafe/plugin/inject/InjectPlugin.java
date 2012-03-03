@@ -51,7 +51,7 @@ public abstract class InjectPlugin extends Plugin {
       try {
         Class clazz = Class.forName(filter);
          for (Class c: fullClassList) {
-            if (c.isAssignableFrom(clazz)) {
+            if (clazz.isAssignableFrom(c)) {
               classNames.add(c);
             }
          }
