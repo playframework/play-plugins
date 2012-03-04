@@ -14,6 +14,11 @@ public class GuicePlugin extends InjectPlugin {
     super(app);
   }
 
+  @Override
+  public boolean enabled() {
+    return !(app.configuration().getString("guiceplugin") != null && app.configuration().getString("guiceplugin").equals("disabled") );
+  }
+
   public <T> T getInstance(Class<T> type) {
      if (injector == null) Logger.warn ("injector is null - perhaps plugin is not configured before GlobalPlugin or onStart was not called yet");
        

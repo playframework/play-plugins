@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 public abstract class InjectPlugin extends Plugin {
 
-  private Application app;
+  protected Application app;
 
   private final String scannedPackage;
 
@@ -23,11 +23,6 @@ public abstract class InjectPlugin extends Plugin {
   }
 
   abstract public <T> T getInstance(Class<T> type);
-
-  @Override
-  public boolean enabled() {
-    return !(app.configuration().getString("injectplugin") != null && app.configuration().getString("injectplugin").equals("disabled") );
-  }
   
   protected List<Object> availableModules() {
     if ( _modules == null) {
