@@ -43,7 +43,7 @@ play.Play.application().plugin(InjectPlugin.class).getInstance(MyServiceInterfac
 
   * making the injected dependencies anything but private
 
-  * injected dependencies can be private in which case a new constructor (alongside an empty default one) could be added to controllers which could be used to inject the mocked dependencies
+  * injected dependencies can be private in which case a new constructor (alongside with an empty default one) could be added to controllers which could be used to inject the mocked dependencies
 
 I would recommend the former solution
 
