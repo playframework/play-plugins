@@ -1,1 +1,1 @@
-1500:com.typesafe.plugin.inject.InjectViaMiniGuicePlugin
+1500:com.typesafe.plugin.inject.ManualInjectionPlugin
