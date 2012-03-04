@@ -1,4 +1,4 @@
-# Guice Plugin
+# Manual Injection Plugin
 
 This plugin provides support for manual dependency injection. Injection points are defined using ```@Provides``` and ```@Singleton``` annotations in a file called ```module.Dependencies```. 
 These would be injected into a preconfigured package (controllers by default)
