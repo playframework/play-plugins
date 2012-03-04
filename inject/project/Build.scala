@@ -23,6 +23,7 @@ object MinimalBuild extends Build {
     resolvers += repo,
     javacOptions += "-Xlint:unchecked",
     libraryDependencies += play,
+    crossPaths := false,
     libraryDependencies +=  "org.ow2.spec.ee" % "ow2-atinject-1.0-spec" % "1.0.10",
     libraryDependencies +=  "com.cedarsoft" % "guice-annotations" % "2.0.1"
   )
