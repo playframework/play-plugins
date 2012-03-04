@@ -62,15 +62,8 @@ public class GuicePlugin extends InjectPlugin {
    * creates instance for default constructor
    */
   private Object createInstane(Class<Object> clazz) throws java.lang.IllegalArgumentException {
-     Constructor constructor = null;
-     for(Constructor<?> c : clazz.getConstructors()) {
-       if(c.getParameterTypes().length == 0) {
-          constructor = c;
-          break; 
-       }
-     }
      try {
-      return constructor.newInstance();
+      return clazz.newInstance();
      } catch (Exception ex) {
        ex.printStackTrace();
        throw new java.lang.IllegalArgumentException();
