@@ -8,7 +8,7 @@ public class InjectViaMiniGuicePlugin extends InjectPlugin {
   }
 
   public <T> T getInstance(Class<T> type) {
-    return com.google.inject.mini.MiniGuice.inject(type, true, availableModules());
+    return com.google.inject.mini.MiniGuice.inject(type, true, availableModules().toArray());
   }
 
   @Override
@@ -17,7 +17,7 @@ public class InjectViaMiniGuicePlugin extends InjectPlugin {
     for (Class<Object> clazz : scanInjectableClasses() ) {
       try {
         Logger.debug("injection for "+ clazz.getName());
-        com.google.inject.mini.MiniGuice.inject(clazz, true, availableModules());
+        com.google.inject.mini.MiniGuice.inject(clazz, true, availableModules().toArray());
       } catch (java.lang.IllegalArgumentException ex) {
         Logger.debug("skipping injection for "+ clazz.getName());
       }

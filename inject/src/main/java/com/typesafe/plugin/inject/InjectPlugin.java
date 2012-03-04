@@ -2,7 +2,7 @@ package com.typesafe.plugin.inject;
 
 import play.*;
 import java.util.ArrayList;
-
+import java.util.List;
 public abstract class InjectPlugin extends Plugin {
 
   private Application app;
@@ -28,11 +28,12 @@ public abstract class InjectPlugin extends Plugin {
   public boolean enabled() {
     return !(app.configuration().getString("injectplugin") != null && app.configuration().getString("injectplugin").equals("disabled") );
   }
-   protected Object[] availableModules() {
+  
+  protected List<Object> availableModules() {
     if ( _modules == null) {
       _modules = createModules();
     }
-    return _modules.toArray();
+    return _modules;
   }
 
   /**
