@@ -5,6 +5,7 @@ This plugin provides support for [Guice](http://code.google.com/p/google-guice/)
 # Features
 
 * Allows static field injection to a preconfigured package (controllers by default) ie
+
 ```java
 public class Application extends Controller {
   
@@ -16,11 +17,14 @@ public class Application extends Controller {
   
 }
 ```
+
 * Dependency modules are configurable (by default it's ```module.Dependencies```)
 
 * Allows direct access to the factory method ie 
-```java 
-play.Play.application().plugin(InjectPlugin.class).getInstance(MyServiceInterface.class)```
+
+```java
+play.Play.application().plugin(InjectPlugin.class).getInstance(MyServiceInterface.class)
+```
 
 # How to install
 
@@ -31,15 +35,15 @@ play.Play.application().plugin(InjectPlugin.class).getInstance(MyServiceInterfac
 
 * add ```1500:com.typesafe.plugin.inject.GuicePlugin```
 
-* that' is
+* that's it
 
 # Testing
 
 * testing can be achieved two ways:
 
-** either making the injected dependencies anything but private
+  * making the injected dependencies anything but private
 
-** injected dependencies can be private in which case a new constructor could be added to controllers which could be used to inject the mocked dependencies
+  * injected dependencies can be private in which case a new constructor (alongside an empty default one) could be added to controllers which could be used to inject the mocked dependencies
 
 I would recommend the former solution
 
