@@ -57,7 +57,7 @@ play.Play.application().plugin(InjectPlugin.class).getInstance(MyServiceInterfac
 
 * create a file called ```play.plugins``` in your ```app/conf``` directory
 
-* add ```1500:com.typesafe.plugin.inject.GuicePlugin```
+* add ```1500:com.typesafe.plugin.inject.ManualInjectionPlugin```
 
 * that's it
 
