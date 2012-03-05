@@ -5,7 +5,7 @@ These would be injected into a preconfigured package (```controllers``` by defau
 
 # Features
 
-* Allows static field injection to a preconfigured package (controllers by default) ie
+* Allows static field injection to a preconfigured package (```controllers``` by default) ie
 
 ```java
 // define your dependencies in module/Dependencies.java
