@@ -46,12 +46,13 @@ class RedisCache (app: Application) extends CachePlugin {
   lazy val api = new CacheAPI {
 
     def set(key: String, value: Any, expiration: Int) {
+     var oos: ObjectOutputStream = null
      try { 
        val out = new ByteArrayOutputStream()
-       val oos = new ObjectOutputStream(out)
+       oos = new ObjectOutputStream(out)
        oos.writeObject(value)
        oos.flush()
-       oos.close()
+       
        val redisV = out.toString("UTF-16LE")
        redis.api.withJedisClient { client =>
           client.set(key,redisV)
@@ -59,23 +60,28 @@ class RedisCache (app: Application) extends CachePlugin {
        }
      } catch {case ex: IOException =>
        Logger.warn("could not serialize key:"+ key+ " and value:"+ value.toString + " ex:"+ex.toString)
+     } finally {
+       if (oos != null) oos.close()
      }
     
     }
 
     def get(key: String): Option[Any] = {
+      var ois: ObjectInputStream = null
       try {
         val b = redis.api.withJedisClient { client =>
           client.get(key)
         }.getBytes("UTF-16LE")
         val in = new ByteArrayInputStream(b)
-        val ois = new ObjectInputStream(in)
+        ois = new ObjectInputStream(in)
         val r = ois.readObject()
         ois.close()
         Some(r)
       } catch {case ex: Exception => 
         Logger.warn("could not desiralize key:"+ key+ " ex:"+ex.toString)
         None
+      } finally {
+       if (ois != null) ois.close()
       }
     }
 
