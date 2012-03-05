@@ -8,16 +8,39 @@ These would be injected into a preconfigured package (```controllers``` by defau
 * Allows static field injection to a preconfigured package (controllers by default) ie
 
 ```java
+// define your dependencies in module/Dependencies.java
+public class Dependencies {
+  
+  @Provides 
+  @Singleton
+  public Something makeSomething() { 
+    return new SpecialSomething();
+  }
+
+  @Provides 
+  @Singleton
+  public MyService makeService(Something s) {
+    return new SpecialService(s);
+  }
+
+
+}
+```
+
+```java
+//any controller
 public class Application extends Controller {
   
-  @Inject static Service s;
+  @Inject static MyService s;
 
   public static Result index() {
     return ok(index.render(s.demonstrate()));
   }
   
 }
+
 ```
+
 
 * Dependency modules are configurable (by default it's ```module.Dependencies```)
 
