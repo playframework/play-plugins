@@ -4,9 +4,10 @@ This plugin provides support for [Guice](http://code.google.com/p/google-guice/)
 
 # Features
 
-* Allows static field injection to a preconfigured package (controllers by default) ie
+* Allows static field injection to a preconfigured package (```controllers``` by default) ie
 
 ```java
+//requires default constructor
 public class Application extends Controller {
   
   @Inject static Service s;
