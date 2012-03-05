@@ -39,6 +39,10 @@ class RedisCache (app: Application) extends CachePlugin {
     new RedisPlugin(app)
   }
 
+  override lazy val enabled = {
+    !app.configuration.getString("rediscacheplugin").filter(_ == "disabled").isDefined
+  }
+
   lazy val api = new CacheAPI {
 
     def set(key: String, value: Any, expiration: Int) {
