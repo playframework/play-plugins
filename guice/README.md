@@ -23,6 +23,7 @@ public class Application extends Controller {
 * Allows direct access to the factory method ie 
 
 ```java
+//in Global.java
 play.Play.application().plugin(InjectPlugin.class).getInstance(MyServiceInterface.class)
 ```
 
