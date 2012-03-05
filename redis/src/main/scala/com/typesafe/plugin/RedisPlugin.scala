@@ -42,15 +42,19 @@ class RedisCache (app: Application) extends CachePlugin {
   lazy val api = new CacheAPI {
 
     def set(key: String, value: Any, expiration: Int) {
-     val out = new ByteArrayOutputStream()
-     val oos = new ObjectOutputStream(out)
-     oos.writeObject(value)
-     oos.flush()
-     oos.close()
-     val redisV = out.toString("UTF-16LE")
-     redis.api.withJedisClient { client =>
-        client.set(key,redisV)
-        client.expire(key,expiration)
+     try { 
+       val out = new ByteArrayOutputStream()
+       val oos = new ObjectOutputStream(out)
+       oos.writeObject(value)
+       oos.flush()
+       oos.close()
+       val redisV = out.toString("UTF-16LE")
+       redis.api.withJedisClient { client =>
+          client.set(key,redisV)
+          client.expire(key,expiration)
+       }
+     } catch {case ex: IOException =>
+       Logger.warn("could not siralize key:"+ key+ " and value:"+ value.toString + " ex:"+ex.toString)
      }
     
     }
