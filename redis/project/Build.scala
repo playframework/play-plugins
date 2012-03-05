@@ -9,9 +9,6 @@ object MinimalBuild extends Build {
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val repo = if (buildVersion.endsWith("SNAPSHOT")) typesafeSnapshot else typesafe  
   
-  lazy val play =  "play" %% "play" % buildVersion
-
-
   lazy val root = Project(id = "play-plugins-redis", base = file("."), settings = Project.defaultSettings).settings(
     version := buildVersion,
     publishTo <<= (version) { version: String =>
@@ -21,10 +18,10 @@ object MinimalBuild extends Build {
     },
     organization := "com.typesafe",
     resolvers += repo,
+    resolvers += "Sedis" at "http://guice-maven.googlecode.com/svn/trunk",
     javacOptions += "-Xlint:unchecked",
-    libraryDependencies += play,
-    crossPaths := false,
-    libraryDependencies +=  "org.ow2.spec.ee" % "ow2-atinject-1.0-spec" % "1.0.10",
-    libraryDependencies +=  "com.cedarsoft" % "guice-annotations" % "2.0.1"
+    libraryDependencies += "play" %% "play" % buildVersion,
+    libraryDependencies += "com.typesafe" %% "play-plugins-util" % buildVersion,
+    libraryDependencies += "org.sedis" %% "sedis" % "1.0"
   )
 }
