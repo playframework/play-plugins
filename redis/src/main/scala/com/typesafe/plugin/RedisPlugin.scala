@@ -58,7 +58,7 @@ class RedisCache (app: Application) extends CachePlugin {
           client.expire(key,expiration)
        }
      } catch {case ex: IOException =>
-       Logger.warn("could not siralize key:"+ key+ " and value:"+ value.toString + " ex:"+ex.toString)
+       Logger.warn("could not serialize key:"+ key+ " and value:"+ value.toString + " ex:"+ex.toString)
      }
     
     }
