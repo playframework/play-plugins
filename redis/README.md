@@ -1,0 +1,66 @@
+# Guice Plugin
+
+This plugin provides support for [Redis](http://redis.io/) using the best Java driver [Jedis](https://github.com/xetorthio/jedis) and the corresponding Scala wrapper [Sedis](https://github.com/pk11/sedis). Also implements play's internal Caching interface 
+
+# Features
+
+*  Provides a Redis-based Cache API (supported types: String, Int, Long, Boolean and Serializable) ie.
+
+```java
+//java
+play.cache.Cache.get("mykey");
+```
+
+and 
+
+```scala
+//scala
+play.api.cache.Cache.get("mykey")
+```
+
+* configurable ( variables: ```redis.host```, ```redis.port```, ```redis.timeout```)
+
+* Allows direct access to Jedis and Sedis: 
+
+```java
+Jedis j = play.Play.application().plugin(RedisPlugin.class).jedisPool().getResource();
+try {
+  /// ... do stuff here 
+  jedis.set("foo", "bar");
+} finally {
+  play.Play.application().plugin(RedisPlugin.class).jedisPool().returnResource(j);
+}  
+```
+
+```scala
+val pool = use[RedisPlugin.class].sedisPool
+pool.withJedisClient { client =>
+  Option[String] single = Dress.up(client).get("single")
+}
+```
+# How to install
+
+* add 
+```"com.typesafe" % "play-plugins-redis" % "2.0-RC4"``` to your dependencies
+
+* create a file called ```play.plugins``` in your ```app/conf``` directory
+
+* add ```500:com.typesafe.plugin.inject.RedisPlugin```
+
+*  while this plugin is loading before the default cache implementation, it's a good practice to disable the overwritten version, so in ```app/conf/application.conf``` add:
+```ehcacheplugin=disabled```
+
+# Sample
+
+for a whole example, please see the bundled sample app
+
+
+## Licence
+
+This software is licensed under the Apache 2 license, quoted below.
+
+Copyright 2012 Typesafe (http://www.typesafe.com).
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
