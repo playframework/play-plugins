@@ -74,7 +74,7 @@ I would recommend the former solution
 
 # Sample
 
-for a whole example, please see the bundled sample app
+for an example, see the bundled sample app
 
 
 ## Licence
