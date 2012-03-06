@@ -3,7 +3,7 @@ import Keys._
 
 object MinimalBuild extends Build {
   
-  lazy val buildVersion =  "2.0-RC3"
+  lazy val buildVersion =  "2.0-RC4"
   
   
 

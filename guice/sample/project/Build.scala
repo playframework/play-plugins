@@ -8,7 +8,7 @@ object ApplicationBuild extends Build {
     val appVersion      = "1.0-SNAPSHOT"
 
     val appDependencies = Seq(
-       "com.typesafe" % "play-plugins-guice" % "2.0-RC3"
+       "com.typesafe" % "play-plugins-guice" % "2.0-RC4"
       
     )
 
