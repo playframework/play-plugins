@@ -1,6 +1,6 @@
-# Guice Plugin
+# Redis Plugin
 
-This plugin provides support for [Redis](http://redis.io/) using the best Java driver [Jedis](https://github.com/xetorthio/jedis) and the corresponding Scala wrapper [Sedis](https://github.com/pk11/sedis). Also implements play's internal Caching interface 
+This plugin provides support for [Redis](http://redis.io/) using the best Java driver [Jedis](https://github.com/xetorthio/jedis) and the corresponding Scala wrapper [Sedis](https://github.com/pk11/sedis). Also implements play's internal [Caching] (https://github.com/playframework/Play20/blob/master/framework/src/play/src/main/scala/play/api/cache/Cache.scala#L9) interface  
 
 # Features
 
@@ -23,7 +23,11 @@ play.api.cache.Cache.get("mykey")
 * Allows direct access to Jedis and Sedis: 
 
 ```java
+import com.typesafe.plugin.RedisPlugin;
+import redis.clients.jedis.*;
+
 Jedis j = play.Play.application().plugin(RedisPlugin.class).jedisPool().getResource();
+
 try {
   /// ... do stuff here 
   jedis.set("foo", "bar");
@@ -33,7 +37,11 @@ try {
 ```
 
 ```scala
-val pool = use[RedisPlugin.class].sedisPool
+
+import play.api.Play.current
+import com.typesafe.plugin.RedisPlugin
+
+val pool = use[RedisPlugin].sedisPool
 pool.withJedisClient { client =>
   Option[String] single = Dress.up(client).get("single")
 }
@@ -52,7 +60,7 @@ pool.withJedisClient { client =>
 
 # Sample
 
-for a whole example, please see the bundled sample app
+for an example, see the bundled sample app
 
 
 ## Licence
