@@ -8,14 +8,14 @@ This plugin provides support for [Redis](http://redis.io/) using the best Java d
 
 ```java
 //java
-play.cache.Cache.get("mykey");
+String f = (String) play.cache.Cache.get("mykey");
 ```
 
 and 
 
 ```scala
 //scala
-play.api.cache.Cache.get("mykey")
+val o = play.api.cache.Cache.get("mykey")
 ```
 
 * configurable ( variables: ```redis.host```, ```redis.port```, ```redis.timeout```)
@@ -23,6 +23,7 @@ play.api.cache.Cache.get("mykey")
 * Allows direct access to Jedis and Sedis: 
 
 ```java
+//java
 import com.typesafe.plugin.RedisPlugin;
 import redis.clients.jedis.*;
 
@@ -37,7 +38,7 @@ try {
 ```
 
 ```scala
-
+//scala
 import play.api.Play.current
 import com.typesafe.plugin.RedisPlugin
 
@@ -55,7 +56,7 @@ pool.withJedisClient { client =>
 
 * add ```500:com.typesafe.plugin.RedisPlugin```
 
-*  while this plugin is loading before the default cache implementation, it's a good practice to disable the overwritten version, so in ```app/conf/application.conf``` add:
+*  while this plugin is going to be loaded before the default cache implementation, it's a good practice to disable the overwritten version, so in ```app/conf/application.conf``` add:
 ```ehcacheplugin=disabled```
 
 # Sample
