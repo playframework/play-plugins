@@ -15,7 +15,7 @@ and
 
 ```scala
 //scala
-val o = play.api.cache.Cache.get("mykey")
+val o = play.api.cache.Cache.getAs[String]("mykey")
 ```
 
 * configurable ( variables: ```redis.host```, ```redis.port```, ```redis.timeout```)
