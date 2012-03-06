@@ -18,7 +18,7 @@ and
 val o = play.api.cache.Cache.getAs[String]("mykey")
 ```
 
-* configurable ( variables: ```redis.host```, ```redis.port```, ```redis.timeout```)
+* configurable ( variables: ```redis.host```, ```redis.port```, ```redis.timeout```, defaults are ```localhost```, ```6379```, ```2000``` )
 
 * Allows direct access to Jedis and Sedis: 
 
