@@ -54,7 +54,7 @@ pool.withJedisClient { client =>
 
 * create a file called ```play.plugins``` in your ```app/conf``` directory
 
-* add ```500:com.typesafe.plugin.RedisPlugin```
+* add ```550:com.typesafe.plugin.RedisPlugin```
 
 *  while this plugin is going to be loaded before the default cache implementation, it's a good practice to disable the overwritten version, so in ```app/conf/application.conf``` add:
 ```ehcacheplugin=disabled```
