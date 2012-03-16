@@ -4,7 +4,7 @@ import PlayProject._
 
 object ApplicationBuild extends Build {
 
-    val appName         = "lip2"
+    val appName         = "play-plugins-dust-sample"
     val appVersion      = "1.0-SNAPSHOT"
 
     val appDependencies = Seq(

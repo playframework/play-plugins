@@ -30,7 +30,7 @@ trait DustTasks extends DustKeys {
 
     ctx.evaluateReader(
       scope,
-      new InputStreamReader(this.getClass.getClassLoader.getResource("dust-0.3.js").openConnection().getInputStream()),
+      new InputStreamReader(this.getClass.getClassLoader.getResource("dust-full-mod-0.3.0.js").openConnection().getInputStream()),
       "dust.js",
       1, null)
 

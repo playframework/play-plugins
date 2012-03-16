@@ -10,14 +10,33 @@ This plugin provides build time compilation for [Dust](https://github.com/akduby
 ```addSbtPlugin("com.typesafe" % "play-plugins-dust" % "1.0-SNAPSHOT")
 ``` to your dependencies
 
-
 # How to Use
 
-TODO
+* Include dust. Note that this is not provided by the sbt plugin. It can be found here: [dust-core-0.3.0.min.js](https://github.com/akdubya/dustjs/blob/master/dist/dust-core-0.3.0.min.js) 
+```<script src="@routes.Assets.at("javascripts/dust-core-0.3.0.min.js")"></script>
+```
+
+* Put your dust template .tpl files under the ```app/assets``` directory
+
+* Reference the generated .js in a  ```<script>``` tag:
+```<script src="@routes.Assets.at("example.tpl.js")"></script>```
+
+* Render the template when you receive the json 
+```
+  $(function() {
+	$.get('@routes.Application.data', function(data) {
+	  console.log('data = ' + JSON.stringify(data));
+	  dust.render('example.tpl', data, function(err, out) {
+	    $('#dust_pan').html(err ? err : out);
+	  });
+	});
+  });
+```
+
 
 # Sample
 
-TODO
+For an example, see the bundled sample app
 
 ## Licence
 
