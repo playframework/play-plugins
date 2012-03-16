@@ -1,0 +1,27 @@
+@()
+<!DOCTYPE html>
+
+@import play._
+
+<html>
+    <head>
+        <title>Test</title>
+        <script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")"></script>
+        <script src="@routes.Assets.at("javascripts/dust-0.3.js")"></script>
+        <script src="@routes.Assets.at("example.tpl.js")"></script>
+        <script>
+          $(function() {
+			$.get('@routes.Application.data', function(data) {
+			  console.log('data = ' + JSON.stringify(data));
+			  dust.render('example.tpl', data, function(err, out) {
+			    $('#dust_pan').html(err ? err : out);
+			  });
+			});
+          });
+        </script>
+    </head>
+    <body>
+       <div id="dust_pan">
+       </div>
+    </body>
+</html>
