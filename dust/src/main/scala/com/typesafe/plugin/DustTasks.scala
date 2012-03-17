@@ -13,6 +13,7 @@ import sbt._
 import PlayProject._
 
 trait DustTasks extends DustKeys {
+
   def compile(name: String, source: String): Either[(String, Int, Int), String] = {
 
     import org.mozilla.javascript._
@@ -50,21 +51,46 @@ trait DustTasks extends DustKeys {
     }
   }
 
-  lazy val DustCompiler = AssetsCompiler("dust",
-    (_ ** "*.tpl"),
-    dustEntryPoints,
-    { (name, min) => name.replace(".tpl", ".tpl.js") },
-    {
-      (tplFile, options) =>
-        compile(tplFile.getName, IO.read(tplFile)).right.map { compiled =>
-          (compiled, None, Seq(tplFile))
-        }.left.map {
-          case (msg, line, column) => throw AssetCompilationException(Some(tplFile),
-            msg,
-            line,
-            column)
-        }.right.get
-    },
-    dustOptions)
+  import Keys._
+
+  lazy val DustCompiler = (sourceDirectory in Compile, resourceManaged in Compile, cacheDirectory, dustFileReplaceRegexp, dustFileReplaceWith, dustAssetsDir, dustAssetsGlob) map {
+    (src, resources, cache, fileReplaceRegexp, fileReplaceWith, assetsDir, files) =>
+      val cacheFile = cache / "dust"
+
+      def naming(name: String) = name.replaceAll(fileReplaceRegexp, fileReplaceWith)
+
+      val currentInfos = files.get.map(f => f -> FileInfo.lastModified(f)).toMap
+
+      val (previousRelation, previousInfo) = Sync.readInfo(cacheFile)(FileInfo.lastModified.format)
+      val previousGeneratedFiles = previousRelation._2s
+
+      if (previousInfo != currentInfos) {
+
+        previousGeneratedFiles.foreach(IO.delete)
+
+        val generated = (files x relativeTo(assetsDir)).flatMap {
+          case (sourceFile, name) => {
+            val msg = compile(sourceFile.getPath.replace(assetsDir.getPath + "/", ""), IO.read(sourceFile)).left.map {
+              case (msg, line, column) => throw AssetCompilationException(Some(sourceFile),
+                msg,
+                line,
+                column)
+            }.right.get
+
+            val out = new File(resources, "public/" + naming(name))
+            IO.write(out, msg)
+            Seq(sourceFile -> out)
+          }
+        }
+
+        Sync.writeInfo(cacheFile,
+          Relation.empty[java.io.File, java.io.File] ++ generated,
+          currentInfos)(FileInfo.lastModified.format)
+
+        generated.map(_._2).distinct.toList
+      } else {
+        previousGeneratedFiles.toSeq
+      }
+  }
 
 }

@@ -3,6 +3,9 @@ package com.typesafe.plugin
 import sbt._
 
 trait DustKeys {
-  lazy val dustEntryPoints = SettingKey[PathFinder]("play-dust-entry-points")
-  lazy val dustOptions = SettingKey[Seq[String]]("play-dust-options")
+  lazy val dustFileReplaceRegexp = SettingKey[String]("play-dust-file-regex-from")
+  lazy val dustFileReplaceWith = SettingKey[String]("play-dust-file-regex-to")
+  lazy val dustAssetsGlob = SettingKey[PathFinder]("play-dust-assets-glob")
+  lazy val dustAssetsDir = SettingKey[File]("play-dust-assets-dir")
+  lazy val dustFileEnding = SettingKey[String]("play-dust-file-ending")
 }

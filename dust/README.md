@@ -16,17 +16,17 @@ This plugin provides build time compilation for [Dust](https://github.com/akduby
 ```<script src="@routes.Assets.at("javascripts/dust-core-0.3.0.min.js")"></script>
 ```
 
-* Put your dust template .tpl files under the ```app/assets``` directory
+* Put your dust template .tl files under the ```app/assets``` directory
 
 * Reference the generated .js in a  ```<script>``` tag:
-```<script src="@routes.Assets.at("example.tpl.js")"></script>```
+```<script src="@routes.Assets.at("example.tl.js")"></script>```
 
 * Render the template when you receive the json 
 ```
   $(function() {
 	$.get('@routes.Application.data', function(data) {
 	  console.log('data = ' + JSON.stringify(data));
-	  dust.render('example.tpl', data, function(err, out) {
+	  dust.render('example.tl', data, function(err, out) {
 	    $('#dust_pan').html(err ? err : out);
 	  });
 	});
