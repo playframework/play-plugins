@@ -53,7 +53,7 @@ trait DustTasks extends DustKeys {
 
   import Keys._
 
-  lazy val DustCompiler = (sourceDirectory in Compile, resourceManaged in Compile, cacheDirectory, dustFileReplaceRegexp, dustFileReplaceWith, dustAssetsDir, dustAssetsGlob) map {
+  lazy val DustCompiler = (sourceDirectory in Compile, resourceManaged in Compile, cacheDirectory, dustFileRegexFrom, dustFileRegexTo, dustAssetsDir, dustAssetsGlob) map {
     (src, resources, cache, fileReplaceRegexp, fileReplaceWith, assetsDir, files) =>
       val cacheFile = cache / "dust"
 

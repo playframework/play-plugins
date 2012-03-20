@@ -9,8 +9,8 @@ object DustPlugin extends Plugin with DustTasks {
     dustAssetsDir <<= (sourceDirectory in Compile)(src => (src / "assets")),
     dustFileEnding := ".tl",
     dustAssetsGlob <<= (dustAssetsDir)(assetsDir => assetsDir ** "*.tl"),
-    dustFileReplaceRegexp <<= (dustFileEnding)(fileEnding => "*" + fileEnding),
-    dustFileReplaceWith <<= (dustFileEnding)(fileEnding => "*" + fileEnding + ".js"),
+    dustFileRegexFrom <<= (dustFileEnding)(fileEnding => fileEnding),
+    dustFileRegexTo <<= (dustFileEnding)(fileEnding => fileEnding + ".js"),
     resourceGenerators in Compile <+= DustCompiler)
 
 }
