@@ -20,11 +20,12 @@ class RedisPlugin(app: Application) extends CachePlugin {
  private lazy val host = app.configuration.getString("redis.host").getOrElse("localhost")
  private lazy val port = app.configuration.getInt("redis.port").getOrElse(6379)
  private lazy val timeout = app.configuration.getInt("redis.timeout").getOrElse(2000)
+ private lazy val password = app.configuration.getString("redis.password").getOrElse(null)
 
  /**
   * provides access to the underlying jedis Pool
   */
- lazy val jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout)
+ lazy val jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password)
 
   /**
   * provides access to the sedis Pool
