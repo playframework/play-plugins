@@ -16,8 +16,8 @@ and that's it!
 
 available commands:
 
-* ```dist-unzip``` unzips a distribution, also adds execution bit (for
-  nix), creates ```start.bat``` for windows
+* ```dist-unzip``` unzips a distribution, also adds execution bit (on
+  *nix) or creates ```start.bat``` (on windows)
 
 # Sample
 
