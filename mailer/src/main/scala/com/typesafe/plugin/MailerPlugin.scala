@@ -64,12 +64,7 @@ trait MailerAPI {
    */
   def setCharset(charset: String): MailerAPI 
 
-  /**
-   * Sets the content type for the email. If none is set, by default it is assumed to be "UTF-8".
-   * @param contentType
-   */
-  def setContentType(contentType: String): MailerAPI 
-  
+ 
   /**
    * Adds a request header to this email message.
    *
@@ -180,14 +175,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: O
      this
   }
 
-  /**
-   * Sets the content type for the email. If none is set, by default it is assumed to be "UTF-8".
-   * @param contentType
-   */
-  def setContentType(contentType: String): MailerAPI = {
-    context += ("contentType"->List(contentType))
-    this
-  }
+  
   
   /**
    * Adds a request header to this email message.
@@ -279,8 +267,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: O
    * @return
    */
   private def createEmailer(bodyText: String, bodyHtml: String): MultiPartEmail = {
-    val contentType = e("contentType").headOption.getOrElse("text/plain")
-    if (contentType == "text/plain" && bodyHtml == "") {
+    if (bodyHtml == null || bodyHtml == "") {
       val e = new MultiPartEmail()
       e.setMsg(bodyText)
       e
