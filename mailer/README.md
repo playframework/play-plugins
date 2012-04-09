@@ -23,7 +23,7 @@ smtp.password (optional)
 import com.typesafe.plugin.*;
 MailerPlugin mail = play.Play.application().plugin(MailerPlugin.class);
 mail.setSubject("mailer");
-mail.addRecipient("my@email.com","toaddress");
+mail.addRecipient("Peter Hausel Junior <noreply@email.com>");
 mail.addFrom("Peter Hausel <noreply@email.com>");
 //sends html
 mail.sendHtml("<html>html</html>" );
@@ -40,7 +40,7 @@ mail.send( "text", "<html>html</html>");
 import com.typesafe.plugin._
 val mail = use[MailerPlugin].email
 mail.setSubject("mailer")
-mail.addRecipient("my@email.com","toaddress")
+mail.addRecipient("Peter Hausel Junior <noreply@email.com>")
 mail.addFrom("Peter Hausel <noreply@email.com>")
 //sends html
 mail.sendHtml("<html>html</html>" )
