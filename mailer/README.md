@@ -21,7 +21,7 @@ smtp.password (optional)
 
 ```java
 import com.typesafe.plugin.*;
-MailerPlugin mail = play.api.Play.unsafeApplication().plugin(MailerPlugin.class);
+MailerPlugin mail = play.Play.application().plugin(MailerPlugin.class);
 mail.setSubject("mailer");
 mail.addRecipient("my@email.com","toaddress");
 mail.addFrom("Peter Hausel <noreply@email.com>");
