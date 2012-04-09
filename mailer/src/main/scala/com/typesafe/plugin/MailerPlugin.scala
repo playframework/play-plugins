@@ -199,6 +199,16 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: O
    */
   def send(bodyText: String): Unit = send(bodyText,"")
   
+    /**
+   * Sends an Html email based on the provided data. 
+   *
+   * @param bodyText : pass a string or use a Play! text template to generate the template
+   *  like view.Mails.templateText(tags).
+   * like view.Mails.templateHtml(tags).
+   * @return
+   */
+  def sendHtml(bodyHtml: String): Unit = send("", bodyHtml)
+  
   /**
    * Sends an email based on the provided data. 
    *
