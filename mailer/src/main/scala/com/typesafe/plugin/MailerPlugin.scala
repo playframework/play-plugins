@@ -222,6 +222,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: O
    */
   def send(bodyText: String, bodyHtml: String): Unit = {
     val email = createEmailer(bodyText,bodyHtml)
+    email.setCharset(e("charset").headOption.getOrElse("utf-8"))
     email.setSubject(e("subject").headOption.getOrElse(""))
     e("from").foreach(setAddress(_) { (address, name) => email.setFrom(address, name) })
     e("replyTo").foreach(setAddress(_) { (address, name) => email.addReplyTo(address, name) })
