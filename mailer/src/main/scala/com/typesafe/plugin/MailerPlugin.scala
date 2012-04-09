@@ -280,7 +280,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: O
    */
   private def createEmailer(bodyText: String, bodyHtml: String): MultiPartEmail = {
     val contentType = e("contentType").headOption.getOrElse("text/plain")
-    if (contentType == "text/plain") {
+    if (contentType == "text/plain" && bodyHtml == "") {
       val e = new MultiPartEmail()
       e.setMsg(bodyText)
       e
