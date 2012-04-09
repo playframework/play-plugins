@@ -25,8 +25,8 @@ MailerPlugin mail = play.api.Play.unsafeApplication().plugin(MailerPlugin.class)
 mail.setSubject("mailer");
 mail.addRecipient("my@email.com","toaddress");
 mail.addFrom("Peter Hausel <noreply@email.com>");
-//sends html and text
-mail.send( "text", "<html>html</html>" );
+//sends html and text, text can be empty
+mail.send( "", "<html>html</html>" );
 //sends ```text/text```
 mail.send( "text" );
 
@@ -40,8 +40,8 @@ val mail = use[MailerPlugin].email
 mail.setSubject("mailer")
 mail.addRecipient("my@email.com","toaddress")
 mail.addFrom("Peter Hausel <noreply@email.com>")
-//sends html and text
-mail.send( "text", "<html>html</html>" )
+//sends html and text, text can be empty
+mail.send( "", "<html>html</html>" )
 //sends ```text/text```
 mail.send( "text" )
 
