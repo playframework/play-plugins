@@ -21,7 +21,7 @@ smtp.password (optional)
 
 ```java
 import com.typesafe.plugin.*;
-MailerPlugin email = play.api.Play.unsafeApplication().plugin(MailerPlugin.class);
+MailerPlugin mail = play.api.Play.unsafeApplication().plugin(MailerPlugin.class);
 mail.setSubject("mailer");
 mail.addRecipient("my@email.com","toaddress");
 mail.addFrom("Peter Hausel <noreply@email.com>");
@@ -36,7 +36,7 @@ mail.send( "text" );
 
 ```scala
 import com.typesafe.plugin._
-val email = use[MailerPlugin].email
+val mail = use[MailerPlugin].email
 mail.setSubject("mailer")
 mail.addRecipient("my@email.com","toaddress")
 mail.addFrom("Peter Hausel <noreply@email.com>")
