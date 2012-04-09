@@ -98,9 +98,10 @@ trait MailerAPI {
 }
 
 /**
- * providers an Emailer based on apache commons-email
- * (based on the EmailNotifier trait by Aishwarya Singhal 
- * (and also Justin Long's gist)
+ * providers an Emailer using apache commons-email
+ * (the implementation si based on 
+ *  the EmailNotifier trait by Aishwarya Singhal 
+ *  and also Justin Long's gist)
  */
 
 class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: Option[String], smtpPass: Option[String]) extends MailerAPI{

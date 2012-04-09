@@ -3,8 +3,8 @@
 This plugin provides a simple emailer.
 
 ## installation
-
-add ```com.typesafe.plugin.CommonsMailerPlugin``` to your ```conf/play.plugins```
+* add ```"com.typesafe" % "play-plugins-mailer" % "2.0"``` to your dependencies (```project/Build.scala```)
+* add ```com.typesafe.plugin.CommonsMailerPlugin``` to your ```conf/play.plugins```
 
 furthermore, the following parameters can be configured in ```conf/application.conf```
 
