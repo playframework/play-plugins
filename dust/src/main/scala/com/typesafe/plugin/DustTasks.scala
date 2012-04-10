@@ -70,7 +70,7 @@ trait DustTasks extends DustKeys {
 
         val generated = (files x relativeTo(assetsDir)).flatMap {
           case (sourceFile, name) => {
-            val msg = compile(sourceFile.getPath.replace(assetsDir.getPath + "/", ""), IO.read(sourceFile)).left.map {
+            val msg = compile(sourceFile.getPath.replace(assetsDir.getPath + File.separator , "").replace(File.separator,"/"), IO.read(sourceFile)).left.map {
               case (msg, line, column) => throw AssetCompilationException(Some(sourceFile),
                 msg,
                 line,
