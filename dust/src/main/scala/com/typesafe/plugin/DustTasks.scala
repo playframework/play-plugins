@@ -3,6 +3,7 @@ package com.typesafe.plugin
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStreamReader
+import org.apache.commons.io.FilenameUtils
 import org.mozilla.javascript.tools.shell.Global
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.JavaScriptException
@@ -70,7 +71,7 @@ trait DustTasks extends DustKeys {
 
         val generated = (files x relativeTo(assetsDir)).flatMap {
           case (sourceFile, name) => {
-            val msg = compile(sourceFile.getPath.replace(assetsDir.getPath + "/", ""), IO.read(sourceFile)).left.map {
+            val msg = compile(FilenameUtils.removeExtension(sourceFile.getPath.replace(assetsDir.getPath + "/", "")), IO.read(sourceFile)).left.map {
               case (msg, line, column) => throw AssetCompilationException(Some(sourceFile),
                 msg,
                 line,

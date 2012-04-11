@@ -2,6 +2,7 @@ package com.typesafe.plugin
 
 import sbt._
 import Keys._
+import org.apache.commons.io.FilenameUtils
 
 object DustPlugin extends Plugin with DustTasks {
 
@@ -10,7 +11,7 @@ object DustPlugin extends Plugin with DustTasks {
     dustFileEnding := ".tl",
     dustAssetsGlob <<= (dustAssetsDir)(assetsDir => assetsDir ** "*.tl"),
     dustFileRegexFrom <<= (dustFileEnding)(fileEnding => fileEnding),
-    dustFileRegexTo <<= (dustFileEnding)(fileEnding => fileEnding + ".js"),
+    dustFileRegexTo <<= (dustFileEnding)(fileEnding => FilenameUtils.removeExtension(fileEnding) + ".js"),
     resourceGenerators in Compile <+= DustCompiler)
 
 }
