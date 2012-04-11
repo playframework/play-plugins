@@ -3,7 +3,8 @@ import Keys._
 
 object MinimalBuild extends Build {
   
-  lazy val buildVersion =  "2.0"
+  lazy val buildVersion =  "2.0.1"
+  lazy val playVersion =  "2.0"
   
   
 
@@ -15,7 +16,7 @@ object MinimalBuild extends Build {
               .exclude("org.ow2.spec.ee", "ow2-atinject-1.0-spec")
               .exclude("com.cedarsoft", "guice-annotation")
 
-  lazy val play =  "play" %% "play" % buildVersion
+  lazy val play =  "play" %% "play" % playVersion
                
   lazy val root = Project(id = "play-plugins-guice", base = file("."), settings = Project.defaultSettings).settings(
     version := buildVersion,
