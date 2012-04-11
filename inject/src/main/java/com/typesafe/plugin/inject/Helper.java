@@ -29,7 +29,7 @@ public class Helper {
         }
         ArrayList<Class> classList = new ArrayList<Class>();
         for (String clazz : classes) {
-          classList.add(Class.forName(clazz));
+          classList.add(classLoader.loadClass(clazz));
         }
         return classList.toArray(new Class[classes.size()]);
       }
