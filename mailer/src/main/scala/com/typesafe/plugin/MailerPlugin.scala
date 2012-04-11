@@ -90,6 +90,17 @@ trait MailerAPI {
    * like view.Mails.templateHtml(tags).
    */
   def send(bodyText: String, bodyHtml: String): Unit 
+
+  /**
+   * Sends an Html email based on the provided data. 
+   *
+   * @param bodyText : pass a string or use a Play! text template to generate the template
+   *  like view.Mails.templateText(tags).
+   * like view.Mails.templateHtml(tags).
+   * @return
+   */
+  def sendHtml(bodyHtml: String): Unit 
+  
 }
 
 /**
