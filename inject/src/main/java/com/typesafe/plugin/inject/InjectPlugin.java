@@ -45,7 +45,7 @@ public abstract class InjectPlugin extends Plugin {
       }
     } else {
       try {
-        Class clazz = Class.forName(filter);
+        Class clazz = app.classloader().loadClass(filter);
          for (Class c: fullClassList) {
             if (clazz.isAssignableFrom(c)) {
               classNames.add(c);
@@ -81,7 +81,7 @@ public abstract class InjectPlugin extends Plugin {
     ArrayList<Object> modules = new ArrayList<Object>();
     try {
       for (String module : moduleNames()) {
-         modules.add(Class.forName(module).newInstance());
+         modules.add(app.classloader().loadClass(module).newInstance());
       }
     } catch (ClassNotFoundException x) {
       Logger.warn("maybe inject.modules config parameter is not set propery?");
