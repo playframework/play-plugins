@@ -1,7 +1,5 @@
 package com.typesafe.plugin
 
-package notifiers
-
 import org.apache.commons.mail._
 
 import java.util.concurrent.Future
