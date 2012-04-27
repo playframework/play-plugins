@@ -11,16 +11,11 @@ import scala.collection.JavaConversions._
 import play.api._
 import play.api.Configuration._
 
-trait MailerAPI {
-  /**
-   * Sets a subject for this email. It enables formatting of the providing string using Java's
-   * string formatter.
-   *
-   * @param subject
-   * @param args
-   */
-  def setSubject(subject: String, args: AnyRef*): MailerAPI 
-  
+trait MailerAPI extends MailerApiJavaInterop {
+   
+
+  /* Sets a subject for this email.*/
+  def setSubject(subject: String): MailerAPI
   /**
    * Defines the sender of this email("from" address).
    *
@@ -28,26 +23,6 @@ trait MailerAPI {
    */
   def addFrom(from: String): MailerAPI 
 
-  /**
-   * Adds an email recipient in CC.
-   *
-   * @param ccRecipients
-   */
-  def addCc(ccRecipients: String*): MailerAPI
-
-  /**
-   * Adds an email recipient in BCC.
-   *
-   * @param bccRecipients
-   */
-  def addBcc(bccRecipients: String*): MailerAPI 
-  /**
-   * Adds an email recipient ("to" addressee).
-   *
-   * @param recipients
-   */
-  def addRecipient(recipients: String*): MailerAPI 
-  
   /**
    * Defines the "reply to" email address.
    *
@@ -123,7 +98,11 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: O
     context += ("subject" -> List(String.format(subject, args: _*)))
     this
   }
-  
+
+  def setSubject(subject: String): MailerAPI = {
+    context += ("subject" -> List(subject))
+    this
+  }
   /**
    * Defines the sender of this email("from" address).
    *
