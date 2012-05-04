@@ -269,8 +269,10 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: O
       val e = new MultiPartEmail()
       e.setMsg(bodyText)
       e
-    } else 
-      new HtmlEmail().setHtmlMsg(bodyHtml).setTextMsg(bodyText)
+    } else if (bodyText == null || bodyText == "") 
+        new HtmlEmail().setHtmlMsg(bodyHtml)
+      else 
+        new HtmlEmail().setHtmlMsg(bodyHtml).setTextMsg(bodyText)
     
   }
 

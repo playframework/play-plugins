@@ -11,7 +11,7 @@ small scala and java utilities that we are using across the board
 # How to install
 
 * add 
-```"com.typesafe" % "play-plugins-redis" % "2.0"``` to your dependencies
+```"com.typesafe" % "play-plugins-util" % "2.0.1"``` to your dependencies
 
 
 ## Licence
