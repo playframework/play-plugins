@@ -35,7 +35,7 @@ trait SbtGoodiesTasks extends SbtGoodiesKeys {
              |setlocal
              |set p=%~dp0
              |set p=%p:\=/%
-             |java %* -cp "%p%lib/*" """ + config.map(_ => "-Dconfig.file=%p%application.conf ").getOrElse("") + """play.core.server.NettyServer "%p%"
+             |java %* -cp "%p%lib/*" """ + config.map(fn => "-Dconfig.file=\"%p%" + fn + "\" ").getOrElse("") + """play.core.server.NettyServer "%p%"
              |""".stripMargin)
       }
       IO.delete(zip)
