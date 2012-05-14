@@ -72,7 +72,8 @@ public class Dependencies {
   public static InjectPlugin inject() {
     return Play.application().plugin(InjectPlugin.class);
   }
-
+  
+  //this is needed for each controller
   public static controllers.Application application() {
     return inject().getInstance(controllers.Application.class);
   }
