@@ -5,7 +5,8 @@ This plugin provides support for [Guice](http://code.google.com/p/google-guice/)
 # Features
 
 * Allow constructor injection via delegate 
-it's essentially the same idea as https://github.com/typesafehub/play-plugins/tree/master/inject/sample_without_static_field
+
+the idea is the same as this https://github.com/typesafehub/play-plugins/tree/master/inject/sample_without_static_field
 
 * Allows static field injection to a preconfigured package (```controllers``` by default) ie
 
