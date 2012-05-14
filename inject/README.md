@@ -46,7 +46,7 @@ public class Application extends Controller {
 * or you can use constructor injection with a delege
 (see ```sample_without_static_field``` for a full example)
 
-in ```app/controllers/Application.java```:
+in app/controllers/Application.java:
 
 ```java
 public class Application extends Controller {
@@ -64,9 +64,9 @@ public class Application extends Controller {
 }
 ```
 
-in ```app/module/Dependencies.java```:
+in app/module/Dependencies.java:
 
-```
+```java
 public class Dependencies {
 
   public static InjectPlugin inject() {
@@ -87,7 +87,7 @@ public class Dependencies {
     };
   }
 
-  @Provides·
+  @Provides
   @Singleton
   public MyService makeService(Something s) {
     return new MyService(s) {
