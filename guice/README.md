@@ -46,13 +46,14 @@ play.Play.application().plugin(InjectPlugin.class).getInstance(MyServiceInterfac
 
 # Testing
 
-* testing can be achieved two ways:
+* testing can be achieved two ways in case of using field injection:
 
   * making the injected dependencies anything but private
 
   * injected dependencies can be private in which case a new constructor (alongside with an empty default one) could be added to controllers which could be used to inject the mocked dependencies
+  (I would recommend the former solution)
 
-I would recommend the former solution
+* testing is trivial in case of using constructor injection.
 
 # Sample
 
