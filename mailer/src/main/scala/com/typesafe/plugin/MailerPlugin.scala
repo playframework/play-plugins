@@ -12,7 +12,6 @@ import play.api._
 import play.api.Configuration._
 
 trait MailerAPI extends MailerApiJavaInterop {
-   
 
   /* Sets a subject for this email.*/
   def setSubject(subject: String): MailerAPI
@@ -44,7 +43,7 @@ trait MailerAPI extends MailerApiJavaInterop {
    * @param key
    * @param value
    */
-  def addHeader(key: String, value: String): MailerAPI  
+  def addHeader(key: String, value: String): MailerAPI
 
 
    /**
@@ -62,7 +61,7 @@ trait MailerAPI extends MailerApiJavaInterop {
    * like view.Mails.templateText(tags).
    * like view.Mails.templateHtml(tags).
    */
-  def send(bodyText: String, bodyHtml: String): Unit 
+  def send(bodyText: String, bodyHtml: String): Unit
 
   /**
    * Sends an Html email based on the provided data. 
@@ -76,16 +75,20 @@ trait MailerAPI extends MailerApiJavaInterop {
   
 }
 
-/**
- * providers an Emailer using apache commons-email
- * (the implementation si based on 
- *  the EmailNotifier trait by Aishwarya Singhal 
- *  and also Justin Long's gist)
- */
+trait MailerBuilder extends MailerAPI {
 
-class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: Option[String], smtpPass: Option[String]) extends MailerAPI{
+  protected val context = collection.mutable.Map[String,List[String]]()
 
-  private val context = collection.mutable.Map[String,List[String]]()
+  /**
+   * extract parameter key from context
+   * @param key
+   */
+  protected def e(key: String): List[String] = {
+    if (key.contains("-"))
+      context.toList.filter(_._1 == key.split("-")(0)).map(e=> e._1.split("-")(1)+"-"+e._2.head)
+    else
+      context.get(key).getOrElse(List[String]())
+  }
 
   /**
    * Sets a subject for this email. It enables formatting of the providing string using Java's
@@ -176,7 +179,6 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: O
     this
   }
 
-
   /**
    * Sends a text email based on the provided data. 
    *
@@ -185,8 +187,8 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: O
    * like view.Mails.templateHtml(tags).
    * @return
    */
-  def send(bodyText: String): Unit = send(bodyText,"")
-  
+  def send(bodyText: String): Unit = send(bodyText, "")
+
     /**
    * Sends an Html email based on the provided data. 
    *
@@ -196,7 +198,18 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: O
    * @return
    */
   def sendHtml(bodyHtml: String): Unit = send("", bodyHtml)
-  
+
+}
+
+/**
+ * providers an Emailer using apache commons-email
+ * (the implementation si based on
+ *  the EmailNotifier trait by Aishwarya Singhal
+ *  and also Justin Long's gist)
+ */
+
+class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: Option[String], smtpPass: Option[String]) extends MailerBuilder {
+
   /**
    * Sends an email based on the provided data. 
    *
@@ -222,19 +235,8 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: O
     for(u <- smtpUser; p <- smtpPass) yield email.setAuthenticator(new DefaultAuthenticator(u, p))
     email.setDebug(false)
     email.send
+  }
 
-  }
-  
-  /**
-   * extract parameter key from context
-   * @param key 
-   */
-  private def e(key: String): List[String] = {
-    if (key.contains("-"))
-      context.toList.filter(_._1 == key.split("-")(0)).map(e=> e._1.split("-")(1)+"-"+e._2.head)
-    else
-      context.get(key).getOrElse(List[String]())
-  }
   /**
    * Extracts an email address from the given string and passes to the enclosed method.
    *
@@ -269,11 +271,33 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: O
       val e = new MultiPartEmail()
       e.setMsg(bodyText)
       e
-    } else if (bodyText == null || bodyText == "") 
+    } else if (bodyText == null || bodyText == "")
         new HtmlEmail().setHtmlMsg(bodyHtml)
-      else 
+      else
         new HtmlEmail().setHtmlMsg(bodyHtml).setTextMsg(bodyText)
-    
+  }
+
+}
+
+/**
+ * Emailer that just prints out the content to the console
+ */
+
+case object MockMailer extends MailerBuilder {
+
+  def send(bodyText: String, bodyHtml: String): Unit = {
+    Logger.info("MOCK MAILER: send email")
+    e("from").foreach(from => Logger.info("FROM:" + from))
+    e("replyTo").foreach(replyTo => Logger.info("REPLYTO:" + replyTo))
+    e("recipients").foreach(to => Logger.info("TO:" + to))
+    e("ccRecipients").foreach(cc => Logger.info("CC:" + cc))
+    e("bccRecipients").foreach(bcc => Logger.info("BCC:" + bcc))
+    if (bodyText != null && bodyText != "") {
+      Logger.info("TEXT: " + bodyText)
+    }
+    if (bodyHtml != null && bodyHtml != "") {
+      Logger.info("HTML: " + bodyHtml)
+    }
   }
 
 }
@@ -289,14 +313,19 @@ trait MailerPlugin extends  play.api.Plugin {
  * plugin impelementation
  */
 class CommonsMailerPlugin(app: play.api.Application) extends MailerPlugin {
-  
-  private lazy val smtpHost = app.configuration.getString("smtp.host").getOrElse(throw new RuntimeException("smtp.host needs to be set in appliction.conf in order to use this plugin"))
-  private lazy val smtpPort = app.configuration.getInt("smtp.port").getOrElse(25)
-  private lazy val smtpSsl = app.configuration.getBoolean("smtp.ssl").getOrElse(false)
-  private lazy val smtpUser = app.configuration.getString("smtp.user")
-  private lazy val smtpPassword = app.configuration.getString("smtp.password")
 
-  private lazy val mailerInstance = new CommonsMailer(smtpHost,smtpPort,smtpSsl, smtpUser, smtpPassword)
+  private lazy val mock = app.configuration.getBoolean("smtp.mock").getOrElse(false)
+
+  private lazy val mailerInstance: MailerAPI = if (mock) {
+    MockMailer
+  } else {
+    val smtpHost = app.configuration.getString("smtp.host").getOrElse(throw new RuntimeException("smtp.host needs to be set in application.conf in order to use this plugin (or set smtp.mock to true)"))
+    val smtpPort = app.configuration.getInt("smtp.port").getOrElse(25)
+    val smtpSsl = app.configuration.getBoolean("smtp.ssl").getOrElse(false)
+    val smtpUser = app.configuration.getString("smtp.user")
+    val smtpPassword = app.configuration.getString("smtp.password")
+    new CommonsMailer(smtpHost, smtpPort, smtpSsl, smtpUser, smtpPassword)
+  }
 
   override lazy val enabled = {
     !app.configuration.getString("apachecommonsmailerplugin").filter(_ == "disabled").isDefined
