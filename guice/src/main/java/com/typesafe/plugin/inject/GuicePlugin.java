@@ -2,7 +2,7 @@ package com.typesafe.plugin.inject;
 import play.*;
 
 import com.google.inject.*;
-import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -36,7 +36,7 @@ public class GuicePlugin extends InjectPlugin {
     for (Class<Object> clazz : injectables ) {
       try {
         Logger.debug("injection for "+ clazz.getName());
-        injector.injectMembers(createInstane(clazz));
+        injector.injectMembers(createOrGetInstane(clazz));
       } catch (java.lang.IllegalArgumentException ex) {
         Logger.debug("skipping injection for "+ clazz.getName());
       } 
@@ -61,9 +61,14 @@ public class GuicePlugin extends InjectPlugin {
   /**
    * creates instance for default constructor
    */
-  private Object createInstane(Class<Object> clazz) throws java.lang.IllegalArgumentException {
+  private Object createOrGetInstane(Class<Object> clazz) throws java.lang.IllegalArgumentException {
      try {
-      return clazz.newInstance();
+       try {
+         return clazz.newInstance();
+       } catch (IllegalAccessException ex) {
+         Field field = clazz.getField("MODULE$");
+         return field.get(null);
+       }
      } catch (Exception ex) {
        ex.printStackTrace();
        throw new java.lang.IllegalArgumentException();
