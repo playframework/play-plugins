@@ -41,6 +41,10 @@ public abstract class InjectPlugin extends Plugin {
       for (Class c: fullClassList) {
         if (play.mvc.Controller.class.isAssignableFrom(c)) {
           classNames.add(c);
+          continue;
+        }
+        if (play.api.mvc.Controller.class.isAssignableFrom(c)) {
+          classNames.add(c);
         }
       }
     } else {
