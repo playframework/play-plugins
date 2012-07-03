@@ -13,7 +13,7 @@ This plugin provides build time compilation for [Dust](https://github.com/akduby
 # How to Use
 
 * Include dust. Note that this is not provided by the sbt plugin. It can be found here: [dust-core-0.3.0.min.js](https://github.com/akdubya/dustjs/blob/master/dist/dust-core-0.3.0.min.js) 
-```<script src="@routes.Assets.at("javascripts/dust-core-0.3.0.min.js")"></script>
+```<script src="@routes.Assets.at("javascripts/dust-core-0.6.0.min.js")"></script>
 ```
 
 * Put your dust template .tl files under the ```app/assets``` directory
