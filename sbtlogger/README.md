@@ -5,8 +5,9 @@ various sbt plugin addons
 # How to install
 
 * add 
+(requires play 2.0.2)
 ```
-addSbtPlugin("com.typesafe" % "play-plugins-sbtgoodies" % "0.1")
+addSbtPlugin("com.typesafe" % "play-plugins-sbtgoodies" % "0.2")
 ``` 
 to your ```project/plugins.sbt```
 

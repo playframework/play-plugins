@@ -4,13 +4,13 @@ sbtPlugin := true
 
 name := "play-plugins-sbtgoodies"
 
-version := "0.1"
+version := "0.2"
 
 organization := "com.typesafe"
 
 libraryDependencies <++= (scalaVersion, sbtVersion) { 
 	case (scalaVersion, sbtVersion) => Seq(
-		sbtPluginExtra("play" % "sbt-plugin" % "2.0.1", sbtVersion, scalaVersion)
+		sbtPluginExtra("play" % "sbt-plugin" % "2.0.2", sbtVersion, scalaVersion)
 	)
 }
 
