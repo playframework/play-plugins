@@ -50,7 +50,12 @@ pool.withJedisClient { client =>
 # How to install
 
 * add 
+
+play 2.0.1:
 ```"com.typesafe" %% "play-plugins-redis" % "2.0.1"``` to your dependencies
+
+play 2.0.1:
+```"com.typesafe" %% "play-plugins-redis" % "2.0.2"``` to your dependencies
 
 * create a file called ```play.plugins``` in your ```app/conf``` directory
 
