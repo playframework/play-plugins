@@ -118,11 +118,13 @@ play.Play.application().plugin(InjectPlugin.class).getInstance(MyServiceInterfac
 # How to install
 
 * add 
+
 play 2.0.2:
 
 ```"com.typesafe" % "play-plugins-inject" % "2.0.3"``` to your dependencies
 
 play 2.0.1:
+
 ```"com.typesafe" % "play-plugins-inject" % "2.0.2"``` to your dependencies
 
 
