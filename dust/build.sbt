@@ -4,7 +4,7 @@ sbtPlugin := true
 
 name := "play-plugins-dust"
 
-version := "1.4-SNAPSHOT"
+version := "1.4"
 
 organization := "com.typesafe"
 
@@ -12,7 +12,7 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 
 libraryDependencies <++= (scalaVersion, sbtVersion) { 
 	case (scalaVersion, sbtVersion) => Seq(
-		sbtPluginExtra("play" % "sbt-plugin" % "2.0", sbtVersion, scalaVersion)
+		sbtPluginExtra("play" % "sbt-plugin" % "2.0.2", sbtVersion, scalaVersion)
 	)
 }
 

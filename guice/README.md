@@ -34,9 +34,9 @@ play.Play.application().plugin(InjectPlugin.class).getInstance(MyServiceInterfac
 ```
 
 # How to install
-
+(requires 2.0.2)
 * add 
-```"com.typesafe" % "play-plugins-guice" % "2.0.2"``` to your dependencies
+```"com.typesafe" % "play-plugins-guice" % "2.0.3"``` to your dependencies
 
 * create a file called ```play.plugins``` in your ```app/conf``` directory
 

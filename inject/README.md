@@ -116,7 +116,7 @@ play.Play.application().plugin(InjectPlugin.class).getInstance(MyServiceInterfac
 ```
 
 # How to install
-
+(requires play 2.0.2)
 * add 
 ```"com.typesafe" % "play-plugins-inject" % "2.0.2"``` to your dependencies
 
