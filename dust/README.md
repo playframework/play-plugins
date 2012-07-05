@@ -14,7 +14,7 @@ play 2.0.2:
 
 play 2.0.1:
 
-```addSbtPlugin("com.typesafe" % "play-plugins-dust" % "1.2-SNAPSHOT")``` 
+```addSbtPlugin("com.typesafe" % "play-plugins-dust" % "1.0-SNAPSHOT")``` 
 
 to your plugin.sbt
 
