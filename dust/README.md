@@ -5,10 +5,16 @@ This plugin provides build time compilation for [Dust](https://github.com/akduby
 
 
 # How to install
-(requires play 2.0.2)
+
 * add 
+play 2.0.2:
 ```addSbtPlugin("com.typesafe" % "play-plugins-dust" % "1.4")
-``` to your dependencies
+``` 
+play 2.0.1:
+```addSbtPlugin("com.typesafe" % "play-plugins-dust" % "1.2-SNAPSHOT")
+``` 
+
+to your dependencies
 
 # How to Use
 
