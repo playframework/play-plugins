@@ -27,14 +27,14 @@ to your plugin.sbt
 * Put your dust template .tl files under the ```app/assets``` directory
 
 * Reference the generated .js in a  ```<script>``` tag:
-```<script src="@routes.Assets.at("example.tl.js")"></script>```
+```<script src="@routes.Assets.at("example.js")"></script>```
 
 * Render the template when you receive the json 
 ```
   $(function() {
 	$.get('@routes.Application.data', function(data) {
 	  console.log('data = ' + JSON.stringify(data));
-	  dust.render('example.tl', data, function(err, out) {
+	  dust.render('example', data, function(err, out) {
 	    $('#dust_pan').html(err ? err : out);
 	  });
 	});
