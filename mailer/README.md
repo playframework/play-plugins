@@ -5,7 +5,7 @@ This plugin provides a simple emailer.
 ## installation
 (requiring play 2.0.2)
 
-* add ```"com.typesafe" %% "play-plugins-mailer" % "2.0.3"``` to your dependencies (```project/Build.scala```)
+* add ```"com.typesafe" %% "play-plugins-mailer" % "2.0.4"``` to your dependencies (```project/Build.scala```)
 * add ```1500:com.typesafe.plugin.CommonsMailerPlugin``` to your ```conf/play.plugins```
 
 furthermore, the following parameters can be configured in ```conf/application.conf```
