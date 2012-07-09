@@ -239,6 +239,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpUser: O
     for(u <- smtpUser; p <- smtpPass) yield email.setAuthenticator(new DefaultAuthenticator(u, p))
     email.setDebug(false)
     email.send
+    context.get.clear()
   }
 
   /**
@@ -302,6 +303,7 @@ case object MockMailer extends MailerBuilder {
     if (bodyHtml != null && bodyHtml != "") {
       Logger.info("HTML: " + bodyHtml)
     }
+    context.get.clear()
   }
 
 }
