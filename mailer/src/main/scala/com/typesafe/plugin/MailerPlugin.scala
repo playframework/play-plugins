@@ -7,7 +7,6 @@ import java.lang.reflect._
 import javax.mail.internet.InternetAddress
 
 import scala.collection.JavaConversions._
-import collection.JavaConverters._
 
 import play.api._
 import play.api.Configuration._
@@ -78,7 +77,11 @@ trait MailerAPI extends MailerApiJavaInterop {
 
 trait MailerBuilder extends MailerAPI {
 
-  protected val context =  (new java.util.concurrent.ConcurrentHashMap[String, List[String]]()).asScala
+  protected val context = new ThreadLocal[collection.mutable.Map[String,List[String]]] {
+    protected override def initialValue(): collection.mutable.Map[String,List[String]] = {
+      collection.mutable.Map[String,List[String]]()
+    }
+  }
 
   /**
    * extract parameter key from context
@@ -86,9 +89,9 @@ trait MailerBuilder extends MailerAPI {
    */
   protected def e(key: String): List[String] = {
     if (key.contains("-"))
-      context.toList.filter(_._1 == key.split("-")(0)).map(e=> e._1.split("-")(1)+"-"+e._2.head)
+      context.get.toList.filter(_._1 == key.split("-")(0)).map(e=> e._1.split("-")(1)+"-"+e._2.head)
     else
-      context.get(key).getOrElse(List[String]())
+      context.get.get(key).getOrElse(List[String]())
   }
 
   /**
@@ -99,12 +102,12 @@ trait MailerBuilder extends MailerAPI {
    * @param args
    */
   def setSubject(subject: String, args: AnyRef*): MailerAPI = {
-    context += ("subject" -> List(String.format(subject, args: _*)))
+    context.get += ("subject" -> List(String.format(subject, args: _*)))
     this
   }
 
   def setSubject(subject: String): MailerAPI = {
-    context += ("subject" -> List(subject))
+    context.get += ("subject" -> List(subject))
     this
   }
   /**
@@ -113,7 +116,7 @@ trait MailerBuilder extends MailerAPI {
    * @param from
    */
   def addFrom(from: String): MailerAPI = {
-    context += ("from"-> List(from))
+    context.get += ("from"-> List(from))
     this
   }
 
@@ -123,7 +126,7 @@ trait MailerBuilder extends MailerAPI {
    * @param ccRecipients
    */
   def addCc(ccRecipients: String*): MailerAPI = {
-    context += ("ccRecipients"->ccRecipients.toList)
+    context.get += ("ccRecipients"->ccRecipients.toList)
     this
   }
 
@@ -133,7 +136,7 @@ trait MailerBuilder extends MailerAPI {
    * @param bccRecipients
    */
   def addBcc(bccRecipients: String*): MailerAPI = {
-    context += ("bccRecipients"->bccRecipients.toList)
+    context.get += ("bccRecipients"->bccRecipients.toList)
     this
   }
   
@@ -143,7 +146,7 @@ trait MailerBuilder extends MailerAPI {
    * @param recipients
    */
   def addRecipient(recipients: String*): MailerAPI = {
-    context += ("recipients"->recipients.toList)
+    context.get += ("recipients"->recipients.toList)
     this
   }
   
@@ -153,7 +156,7 @@ trait MailerBuilder extends MailerAPI {
    * @param replyTo
    */
   def setReplyTo(replyTo: String): MailerAPI = {
-    context += ("replyTo"->List(replyTo))
+    context.get += ("replyTo"->List(replyTo))
     this
   }
   
@@ -163,7 +166,7 @@ trait MailerBuilder extends MailerAPI {
    * @param charset
    */
   def setCharset(charset: String): MailerAPI = {
-     context += ("charset"->List(charset))
+     context.get += ("charset"->List(charset))
      this
   }
 
@@ -176,7 +179,7 @@ trait MailerBuilder extends MailerAPI {
    * @param value
    */
   def addHeader(key: String, value: String): MailerAPI  = {
-    context += ("header-"+key->List(value))
+    context.get += ("header-"+key->List(value))
     this
   }
 
