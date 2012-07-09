@@ -7,6 +7,7 @@ import java.lang.reflect._
 import javax.mail.internet.InternetAddress
 
 import scala.collection.JavaConversions._
+import collection.JavaConverters._
 
 import play.api._
 import play.api.Configuration._
@@ -77,7 +78,7 @@ trait MailerAPI extends MailerApiJavaInterop {
 
 trait MailerBuilder extends MailerAPI {
 
-  protected val context = collection.mutable.Map[String,List[String]]()
+  protected val context =  (new java.util.concurrent.ConcurrentHashMap[String, List[String]]()).asScala
 
   /**
    * extract parameter key from context
