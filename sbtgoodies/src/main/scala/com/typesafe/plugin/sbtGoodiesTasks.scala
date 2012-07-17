@@ -22,7 +22,7 @@ trait SbtGoodiesTasks extends SbtGoodiesKeys {
       IO.unzip(zip, distDir)
       val os = System.getProperty("os.name").toLowerCase()
 
-      if (os.indexOf("win") <= 0) {
+      if (os.indexOf("win") < 0) {
         //nix
         val libc = Native.loadLibrary("c", classOf[CLibrary]).asInstanceOf[CLibrary]
         libc.chmod(unzippedDir.getAbsolutePath+"/start", 0755)
