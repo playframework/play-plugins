@@ -27,7 +27,7 @@ to your plugin.sbt
 * Put your dust template .tl files under the ```app/assets``` directory
 
 * Reference the generated .js in a  ```<script>``` tag:
-```<script src="@routes.Assets.at("example.tl.js")"></script>```
+```<script src="@routes.Assets.at("example.js")"></script>```
 
 * Render the template when you receive the json 
 ```
