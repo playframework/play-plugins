@@ -5,7 +5,7 @@ import Keys._
 
 object SbtGoodiesPlugin extends Plugin with SbtGoodiesTasks {
 
-  override def settings: Seq[Setting[_]] = super.settings ++ Seq(
+  val distUnzipSettings: Seq[Setting[_]] = Seq(
      distUnzip <<= distUnzipTask,
      distUnzip <<= distUnzip.dependsOn(PlayProject.dist)
   )
