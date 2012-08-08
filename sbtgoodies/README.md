@@ -8,7 +8,18 @@ various sbt plugin addons
 ```
 addSbtPlugin("com.typesafe" % "play-plugins-sbtgoodies" % "0.1")
 ``` 
-to your ```project/plugins.sbt```
+to your ```project/plugins.sbt``` and update your Build.scala to include the distUnzipSettings:
+
+    import com.typesafe.plugin.SbtGoodiesPlugin
+
+    val frontend = PlayProject(
+        appName,
+        appVersion,
+        deps,
+        file("frontend"),
+        JAVA,
+        Defaults.defaultSettings ++ SbtGoodiesPlugin.distUnzipSettings
+      )
 
 and that's it!
 
