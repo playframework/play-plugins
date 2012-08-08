@@ -4,7 +4,7 @@ various sbt plugin addons
 
 # How to install
 
-* add 
+Add 
 ```
 addSbtPlugin("com.typesafe" % "play-plugins-sbtgoodies" % "0.1")
 ``` 
