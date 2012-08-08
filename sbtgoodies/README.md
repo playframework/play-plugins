@@ -4,11 +4,11 @@ various sbt plugin addons
 
 # How to install
 
-Add 
+In your ```project/plugins.sbt```, add
 ```
 addSbtPlugin("com.typesafe" % "play-plugins-sbtgoodies" % "0.1")
 ``` 
-to your ```project/plugins.sbt``` and update your Build.scala to include the distUnzipSettings:
+And then update your Build.scala to include the distUnzipSettings:
 
     import com.typesafe.plugin.SbtGoodiesPlugin
 
