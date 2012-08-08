@@ -3,8 +3,8 @@ import Keys._
 
 object MinimalBuild extends Build {
   
-  lazy val buildVersion =  "2.0.3"
-  lazy val playVersion = "2.0.2"
+  lazy val buildVersion =  "2.0.3-08072012"
+  lazy val playVersion = "2.1-08072012"
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val repo = if (buildVersion.endsWith("SNAPSHOT")) typesafeSnapshot else typesafe  

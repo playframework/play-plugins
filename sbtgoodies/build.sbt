@@ -8,11 +8,7 @@ version := "0.2"
 
 organization := "com.typesafe"
 
-libraryDependencies <++= (scalaVersion, sbtVersion) { 
-	case (scalaVersion, sbtVersion) => Seq(
-		sbtPluginExtra("play" % "sbt-plugin" % "2.0.2", sbtVersion, scalaVersion)
-	)
-}
+addSbtPlugin("play" % "sbt-plugin" % "2.1-08072012")
 
 libraryDependencies += "com.sun.jna" % "jna" % "3.0.9"
 

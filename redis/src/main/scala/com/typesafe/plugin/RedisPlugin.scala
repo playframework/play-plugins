@@ -94,6 +94,7 @@ class RedisPlugin(app: Application) extends CachePlugin {
      }
     
     }
+    def remove(key: String): Unit =  sedisPool.withJedisClient { client => client.del(key) }
 
     def get(key: String): Option[Any] = {
       var ois: ObjectInputStream = null

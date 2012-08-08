@@ -3,7 +3,7 @@ import Keys._
 
 object MinimalBuild extends Build {
   
-  lazy val buildVersion =  "2.0.2"
+  lazy val buildVersion =  "2.0.3-08072012"
   
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
@@ -21,7 +21,7 @@ object MinimalBuild extends Build {
     resolvers += "Sedis" at "http://guice-maven.googlecode.com/svn/trunk",
     javacOptions += "-Xlint:unchecked",
     libraryDependencies += "biz.source_code" % "base64coder" % "2010-09-21",
-    libraryDependencies += "com.typesafe" %% "play-plugins-util" % "2.0.3",
-    libraryDependencies += "org.sedis" %% "sedis" % "1.0.1"
+    libraryDependencies += "com.typesafe" %% "play-plugins-util" % "2.0.3-08072012",
+    libraryDependencies += "org.sedis" % "sedis_2.9.1" % "1.0.1"
   )
 }
