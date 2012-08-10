@@ -4,11 +4,11 @@ sbtPlugin := true
 
 name := "play-plugins-sbtgoodies"
 
-version := "0.2"
+version := "0.3"
 
 organization := "com.typesafe"
 
-addSbtPlugin("play" % "sbt-plugin" % "2.1-08072012")
+addSbtPlugin("play" % "sbt-plugin" % "2.1-08072012" % "provided")
 
 libraryDependencies += "com.sun.jna" % "jna" % "3.0.9"
 
