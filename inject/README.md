@@ -1,3 +1,9 @@
+# Play 2.1
+this plugin now is obsolate. Use play.GlobalSetting#getControllerInstance instead.
+
+
+# For older verions of Play
+
 # Manual Injection Plugin
 
 This plugin provides support for manual dependency injection. Injection points are defined using ```@Provides``` (and ```@Singleton```) annotations in a class called ```module.Dependencies```. 
