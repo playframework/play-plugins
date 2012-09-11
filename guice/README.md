@@ -1,3 +1,9 @@
+# Play 2.1
+this plugin now is obsolate. Use play.GlobalSetting#getControllerInstance instead.
+
+
+# For older verions of Play
+
 # Guice Plugin
 
 This plugin provides support for [Guice](http://code.google.com/p/google-guice/)
