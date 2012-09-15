@@ -31,7 +31,7 @@ Jedis j = play.Play.application().plugin(RedisPlugin.class).jedisPool().getResou
 
 try {
   /// ... do stuff here 
-  jedis.set("foo", "bar");
+  j.set("foo", "bar");
 } finally {
   play.Play.application().plugin(RedisPlugin.class).jedisPool().returnResource(j);
 }  
