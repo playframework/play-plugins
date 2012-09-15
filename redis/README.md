@@ -62,6 +62,7 @@ play 2.0.1:
 * add ```550:com.typesafe.plugin.RedisPlugin```
 
 *  while this plugin is going to be loaded before the default cache implementation, it's a good practice to disable the overwritten plugin, so in ```app/conf/application.conf``` add:
+
 ```ehcacheplugin=disabled```
 
 # Sample
