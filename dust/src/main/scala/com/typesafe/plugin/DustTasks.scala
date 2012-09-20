@@ -45,9 +45,14 @@ trait DustTasks extends DustKeys {
       case e: JavaScriptException => {
         val jsError = e.getValue.asInstanceOf[Scriptable]
         val message = ScriptableObject.getProperty(jsError, "message").toString
-        val line = ScriptableObject.getProperty(jsError, "fileName").toString.toDouble.toInt
-        val column = ScriptableObject.getProperty(jsError, "lineNumber").toString.toDouble.toInt
-        Left(message, line, column)
+        
+        // dust.js has weird error reporting where the line/column are part of the message, so we have to use a Regex to find them
+        val DustCompileError = ".* At line : (\\d+), column : (\\d+)".r
+        
+        message match {
+          case DustCompileError(line, column) => Left(message, line.toInt, column.toInt)
+          case _ => Left(message, 0, 0) // Some other weird error, we have no line/column info now.
+        }
       }
     }
   }
