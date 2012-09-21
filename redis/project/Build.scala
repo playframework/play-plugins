@@ -10,7 +10,7 @@ object MinimalBuild extends Build {
   lazy val repo = if (buildVersion.endsWith("SNAPSHOT")) typesafeSnapshot else typesafe  
   
   lazy val root = Project(id = "play-plugins-redis", base = file("."), settings = Project.defaultSettings).settings(
-    version := buildVersion,
+    version := "2.1-09092012-2",
     publishTo <<= (version) { version: String =>
                 val nexus = "http://typesafe.artifactoryonline.com/typesafe/"
                 if (version.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "maven-snapshots/") 
