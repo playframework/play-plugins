@@ -1,5 +1,5 @@
 # Play 2.1
-this plugin now is obsolate. Use ```play.GlobalSetting#getControllerInstance``` instead.
+this plugin now is obsolete. Use ```play.GlobalSetting#getControllerInstance``` instead.
 
 
 # For older verions of Play
