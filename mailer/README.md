@@ -39,7 +39,6 @@ mail.sendHtml("<html>html</html>" );
 mail.send( "text" );
 //sends both text and html
 mail.send( "text", "<html>html</html>");
-
 ```
 
 ## using it from scala
@@ -56,9 +55,13 @@ mail.sendHtml("<html>html</html>" )
 mail.send( "text" )
 //sends both text and html
 mail.send( "text", "<html>html</html>")
-
 ```
 
+use[MailerPlugin] needs an implicit play.api.Application available to it.  If you do not have one available already from where you are trying to create the mailer you may want to add this line to get the current Application.
+
+```scala
+import play.api.Play.current
+```
 
 ## Licence
 
