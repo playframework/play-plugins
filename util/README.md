@@ -9,10 +9,10 @@ small scala and java utilities that we are using across the board
 * provides security implementation based on a request header and/or query parameter (Scala)
 
 # How to install
-(requires play 2.0.2)
+(requires play 2.0.x)
 
 * add 
-```"com.typesafe" % "play-plugins-util" % "2.0.3"``` to your dependencies
+```"com.typesafe" % "play-plugins-util" % "2.0.4"``` to your dependencies
 
 
 ## Licence
