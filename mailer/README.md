@@ -18,6 +18,7 @@ furthermore, the following parameters can be configured in ```conf/application.c
 smtp.host (mandatory)
 smtp.port (defaults to 25)
 smtp.ssl (defaults to no)
+smtp.tls (defaults to no)
 smtp.user (optional)
 smtp.password (optional)
 ```
