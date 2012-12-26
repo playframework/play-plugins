@@ -58,8 +58,10 @@ trait DustTasks extends DustKeys {
   }
 
   protected def templateName(sourceFile: String, assetsDir: String): String = {
+    val sourceFileWithForwardSlashes = FilenameUtils.separatorsToUnix(sourceFile)
+    val assetsDirWithForwardSlashes  = FilenameUtils.separatorsToUnix(assetsDir)
     FilenameUtils.removeExtension(
-      sourceFile.replace(assetsDir + "/", "")
+      sourceFileWithForwardSlashes.replace(assetsDirWithForwardSlashes + "/", "")
     )
   }
 
