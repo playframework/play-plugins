@@ -57,6 +57,12 @@ trait DustTasks extends DustKeys {
     }
   }
 
+  protected def templateName(sourceFile: String, assetsDir: String): String = {
+    FilenameUtils.removeExtension(
+      sourceFile.replace(assetsDir + "/", "")
+    )
+  }
+
   import Keys._
 
   lazy val DustCompiler = (sourceDirectory in Compile, resourceManaged in Compile, cacheDirectory, dustFileRegexFrom, dustFileRegexTo, dustAssetsDir, dustAssetsGlob) map {
@@ -76,7 +82,7 @@ trait DustTasks extends DustKeys {
 
         val generated = (files x relativeTo(assetsDir)).flatMap {
           case (sourceFile, name) => {
-            val msg = compile(FilenameUtils.removeExtension(sourceFile.getPath.replace(assetsDir.getPath + "/", "")), IO.read(sourceFile)).left.map {
+            val msg = compile(templateName(sourceFile.getPath, assetsDir.getPath), IO.read(sourceFile)).left.map {
               case (msg, line, column) => throw AssetCompilationException(Some(sourceFile),
                 msg,
                 line,
@@ -98,5 +104,4 @@ trait DustTasks extends DustKeys {
         previousGeneratedFiles.toSeq
       }
   }
-
 }
