@@ -18,6 +18,8 @@ libraryDependencies <++= (scalaVersion) {
 
 libraryDependencies += "commons-io" % "commons-io" % "2.2"
 
+libraryDependencies += "org.specs2" %% "specs2" % "1.12.3" % "test"
+
 publishMavenStyle := false
 
 publishTo <<= (version) { version: String =>
