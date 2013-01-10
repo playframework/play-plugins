@@ -3,6 +3,7 @@ import Keys._
 
 object MinimalBuild extends Build {
   
+
   lazy val buildVersion =  "2.1-RC2"
   lazy val playVersion =  "2.1-RC2"
   
@@ -15,8 +16,8 @@ object MinimalBuild extends Build {
     scalaVersion := "2.10.0",
     publishTo <<= (version) { version: String =>
                 val nexus = "http://typesafe.artifactoryonline.com/typesafe/"
-                if (version.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "ivy-snapshots/") 
-                else                                   Some("releases"  at nexus + "ivy-releases/")
+                if (version.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "maven-snapshots/")
+                else                                   Some("releases"  at nexus + "maven-releases/")
     },
     organization := "com.typesafe",
     resolvers += repo,
@@ -24,6 +25,6 @@ object MinimalBuild extends Build {
     javacOptions += "-Xlint:unchecked",
     libraryDependencies += "play" %% "play" % playVersion % "provided",
     libraryDependencies += "org.apache.commons" % "commons-email" % "1.2",
-    libraryDependencies += "com.typesafe" %% "play-plugins-util" % buildVersion
+    libraryDependencies += "com.typesafe" %% "play-plugins-util" buildVersion
   )
 }
