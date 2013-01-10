@@ -3,8 +3,8 @@ import Keys._
 
 object MinimalBuild extends Build {
   
-  lazy val buildVersion =  "2.0.3-08072012"
-  lazy val playVersion =  "2.1-08072012"
+  lazy val buildVersion =  "2.1-RC2"
+  lazy val playVersion =  "2.1-RC2"
   
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
@@ -12,8 +12,9 @@ object MinimalBuild extends Build {
   
   lazy val root = Project(id = "play-plugins-mailer", base = file("."), settings = Project.defaultSettings).settings(
     version := buildVersion,
+    scalaVersion := "2.10.0",
     publishTo <<= (version) { version: String =>
-                val nexus = "http://repo.typesafe.com/typesafe/"
+                val nexus = "http://typesafe.artifactoryonline.com/typesafe/"
                 if (version.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "ivy-snapshots/") 
                 else                                   Some("releases"  at nexus + "ivy-releases/")
     },
@@ -21,8 +22,8 @@ object MinimalBuild extends Build {
     resolvers += repo,
     javacOptions ++= Seq("-source","1.6","-target","1.6", "-encoding", "UTF-8"),
     javacOptions += "-Xlint:unchecked",
-    libraryDependencies += "play" %% "play" % playVersion,
+    libraryDependencies += "play" %% "play" % playVersion % "provided",
     libraryDependencies += "org.apache.commons" % "commons-email" % "1.2",
-    libraryDependencies += "com.typesafe" %% "play-plugins-util" % "2.0.3-08072012"
+    libraryDependencies += "com.typesafe" %% "play-plugins-util" % buildVersion
   )
 }
