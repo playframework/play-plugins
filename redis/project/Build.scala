@@ -3,14 +3,15 @@ import Keys._
 
 object MinimalBuild extends Build {
   
-  lazy val buildVersion =  "2.1-09092012"
+  lazy val buildVersion =  "2.1-RC2"
   
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val repo = if (buildVersion.endsWith("SNAPSHOT")) typesafeSnapshot else typesafe  
-  
+  lazy val pk11 = "pk11 repo" at "http://pk11-scratch.googlecode.com/svn/trunk"
   lazy val root = Project(id = "play-plugins-redis", base = file("."), settings = Project.defaultSettings).settings(
-    version := "2.1-09092012-2",
+    version := "2.1-RC2",
+    scalaVersion := "2.10.0",
     publishTo <<= (version) { version: String =>
                 val nexus = "http://typesafe.artifactoryonline.com/typesafe/"
                 if (version.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "maven-snapshots/") 
@@ -18,9 +19,11 @@ object MinimalBuild extends Build {
     },
     organization := "com.typesafe",
     resolvers += repo,
+    resolvers += pk11,
     javacOptions += "-Xlint:unchecked",
-    libraryDependencies += "biz.source_code" % "base64coder" % "2010-09-21",
+    libraryDependencies += "biz.source_code" % "base64coder" % "2010-12-19",
     libraryDependencies += "com.typesafe" %% "play-plugins-util" % buildVersion,
-    libraryDependencies += "org.sedis" % "sedis_2.9.2" % "1.1.0"
+    libraryDependencies += "play" %% "play" % buildVersion % "provided",
+    libraryDependencies += "org.sedis" % "sedis_2.10.0" % "1.1.0"
   )
 }
