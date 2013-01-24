@@ -1,0 +1,14 @@
+
+GET /                           controllers.Application.index
+GET /foo/bar                    controllers.Application.index
+GET /single/end/:param          controllers.Application.singleParam(param)
+GET /single/middle/:param/f     controllers.Application.singleParam(param)
+GET /regex/$param<[0-9]+>       controllers.Application.singleParam(param)
+GET /rest/*param                controllers.Application.singleParam(param)
+GET /multiple/:param1/:param2   controllers.Application.twoParams(param1, param2)
+# @statsd.key custom.key
+GET /key/in/comments            controllers.Application.index
+GET /async                      controllers.Application.async
+GET /sync/failure               controllers.Application.syncFailure
+GET /async/failure              controllers.Application.asyncFailure
+GET /error                      controllers.Application.error

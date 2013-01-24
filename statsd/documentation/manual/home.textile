@@ -1,0 +1,64 @@
+h1. statsd
+
+This is a simple **statsd** module for **Play! Framework 2**. It pulls in configuration from @conf/application.conf@
+and provides a singleton object @Statsd@ with methods for **counter** and **timing** calls to **statsd**.  It provides
+both a Scala and Java interface.  Similar to the Play 2 convention, the Scala interface is called
+@play.modules.statsd.api.Statsd@, and the Java interface is @play.modules.statsd.Statsd@.
+
+h2. Getting started
+
+To install, add @"com.typesafe.play.plugins" %% "play-statsd" % "2.1.0"@ to your dependencies, for example:
+
+bc.. val appDendencies = Seq(@"com.typesafe.play.plugins" %% "play-statsd" % "2.1.0")
+
+h2. Configuration
+
+The following are configuration flags that belong in @conf/application.conf@:
+
+* @statsd.enabled@: Should be @true@ to use this module. Can be @false@ for testing.
+* @statsd.stat.prefix@: The prefix for all stats sent by this app. They will appear in a folder of the same name on graphite.
+* @statsd.host@: The hostname of the statsd server.
+* @statsd.port@: The port for the statsd server.
+
+p(note). If there are any configuration problems (missing or unparseable settings), there will be a warning the first time the module is used but will not cause an error in your app.
+
+h2. Scala Usage
+
+To use this module, first add this import:
+
+@import play.modules.statsd.api.Statsd@
+
+Now you can call it like this:
+
+bc.. Statsd.increment("my.stat")  // Increment my.stat by 1
+Statsd.increment("my.bigger.stat", value = 100)  // Increment my.bigger.stat by 100
+Statsd.increment("my.frequent.stat", samplingRate = 0.1)  // Increment my.frequent.stat 10% of the time
+Statsd.timing("my.operation", 100)  // my.operation took 100 ms
+Statsd.timing("my.frequent.operation", 10, 0.5)  // my operation took 50 ms. Send this stat 50% of the time
+Statsd.time("my.operation.i.dont.want.to.time.myself") {
+  // do some stuff...
+} // This will get timed automatically.
+Statsd.gauge("my.value", 42)  // Record 42 for my.value
+
+p(note). Any errors will be logged, but will not cause the app to fail.
+
+h2. Java Usage
+
+To use this module, first add this import:
+
+@import play.modules.statsd.Statsd;@
+
+Now you can call it like this:
+
+bc.. Statsd.increment("my.stat");  // Increment my.stat by 1
+Statsd.increment("my.bigger.stat", 100);  // Increment my.bigger.stat by 100
+Statsd.increment("my.frequent.stat", 0.1);  // Increment my.frequent.stat 10% of the time
+Statsd.timing("my.operation", 100);  // my.operation took 100 ms
+Statsd.timing("my.frequent.operation", 10, 0.5);  // my operation took 50 ms. Send this stat 50% of the time
+String result = Statsd.time("my.operation.i.dont.want.to.time.myself", new F.Function0<String>() {
+  public String apply() {
+    return "some result";
+  }}); // This will get timed automatically.
+Statsd.gauge("my.value", 42L)  // Record 42 for my.value
+
+p(note). Any errors will be logged, but will not cause the app to fail.
