@@ -1,9 +1,6 @@
 h1. statsd
 
-This is a simple **statsd** module for **Play! Framework 2**. It pulls in configuration from @conf/application.conf@
-and provides a singleton object @Statsd@ with methods for **counter** and **timing** calls to **statsd**.  It provides
-both a Scala and Java interface.  Similar to the Play 2 convention, the Scala interface is called
-@play.modules.statsd.api.Statsd@, and the Java interface is @play.modules.statsd.Statsd@.
+This is a simple **statsd** module for **Play! Framework 2**. It pulls in configuration from @conf/application.conf@ and provides a singleton object @Statsd@ with methods for **counter** and **timing** calls to **statsd**.  It provides both a Scala and Java interface.  Similar to the Play 2 convention, the Scala interface is called @play.modules.statsd.api.Statsd@, and the Java interface is @play.modules.statsd.Statsd@.  
 
 h2. Getting started
 
@@ -17,6 +14,8 @@ The following are configuration flags that belong in @conf/application.conf@:
 
 * @statsd.enabled@: Should be @true@ to use this module. Can be @false@ for testing.
 * @statsd.stat.prefix@: The prefix for all stats sent by this app. They will appear in a folder of the same name on graphite.
+* @statsd.routes.prefix@: The prefix to be attached to all routes logged by the StatsdFilter.  By default this is "routes".  This prefix is in addition to the main prefix (so if that's foo, then the default will be foo.routes).
+* @statsd.routes.combined.prefix@: The prefix to be attached to combined http request logging.  By default this is "routes.combined".
 * @statsd.host@: The hostname of the statsd server.
 * @statsd.port@: The port for the statsd server.
 
@@ -62,3 +61,45 @@ String result = Statsd.time("my.operation.i.dont.want.to.time.myself", new F.Fun
 Statsd.gauge("my.value", 42L)  // Record 42 for my.value
 
 p(note). Any errors will be logged, but will not cause the app to fail.
+
+h2. StatsdFilter
+
+This module comes with an optional filter that can be used to log request counts and time requests.  It maps requests according to their configured path and method to a statsd key, using the following rules:
+
+bc.. GET     /foo/bar            -> routes.foo.bar.get
+GET     /foo/:param         -> routes.foo.param.get
+GET     /foo/*path          -> routes.foo.path.get
+POST    /foo/$id<[0-9]+>    -> routes.foo.id.post
+GET     /                   -> routes.get
+# @statsd.key some.custom.key
+GET     /foo/bar            -> routes.some.custom.key
+
+In addition, the following stats overall stats are recorded:
+
+@routes.combined.200@ - The count of each response by status code.
+@routes.combined.success@ - The count of each successful response.  This includes 4xx status codes, since the server still handled them successfully.
+@routes.combined.error@ - The count of error responses.  This is any response with a 5xx status code.
+@routes.combined.time@ - The time for all requests.
+@routes.combined.handlerNotFound@ - The count and time of all requests for which no handler was found to handle them.
+
+Note that the time a request takes is defined as the amount of time from when the request headers are first received, through to when the response header is generated.  It includes the time it takes to receive the body of the request, but does not include the time it takes to send the body of the response.
+
+Websocket requests are not reported.
+
+h3. Usage in Scala
+
+The easiest way to use the filter in Scala applications is to use the @WithFilters@ helper in your @Global@ object, like this:
+
+bq.. object Global extends WithFilters(new play.modules.statsd.api.StatsdFilter()) {
+  ...
+}
+
+h3. Usage in Java
+
+Just return the @StatsdFilter@ class from the @filters@ method of your @Global@ object:
+
+bq.. public class Global extends GlobalSettings {
+    public <T extends play.api.mvc.EssentialFilter> Class<T>[] filters() {
+        return new Class[] {play.modules.statsd.StatsdFilter.class};
+    }
+}
