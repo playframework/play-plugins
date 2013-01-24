@@ -7,6 +7,15 @@ import scala.collection.concurrent.TrieMap
 import java.util.Locale
 import util.control.NonFatal
 
+/**
+ * Filter for reporting request metrics to statsd.  Usage:
+ *
+ * {{{
+ * object Global extends WithFilters(new StatsdFilter()) {
+ *   ...
+ * }
+ * }}}
+ */
 class StatsdFilter extends EssentialFilter {
 
   lazy val prefix = loadPrefix("statsd.routes.prefix", "routes.")
