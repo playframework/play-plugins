@@ -4,7 +4,7 @@ import java.net.{SocketTimeoutException, DatagramPacket, DatagramSocket}
 import org.specs2.mutable._
 import play.api.test.Helpers._
 import play.api.test._
-import org.specs2.execute.Result
+import org.specs2.execute.{AsResult, Result}
 import collection.mutable.ListBuffer
 import play.api.libs.ws.WS
 import concurrent.Await
@@ -121,10 +121,10 @@ object IntegrationTestSpec extends Specification {
     }
 
 
-    def around[T](t: => T)(implicit evidence$1: (T) => Result) = running(TestServer(9001, fakeApp)) {
+    def around[T](t: => T)(implicit evidence$1: AsResult[T]) = running(TestServer(9001, fakeApp)) {
       mockStatsd
       try {
-        t
+        AsResult(t)
       } finally {
         mockStatsd.close()
       }

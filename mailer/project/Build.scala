@@ -25,6 +25,6 @@ object MinimalBuild extends Build {
     javacOptions += "-Xlint:unchecked",
     libraryDependencies += "play" %% "play" % playVersion % "provided",
     libraryDependencies += "org.apache.commons" % "commons-email" % "1.2",
-    libraryDependencies += "com.typesafe" %% "play-plugins-util" buildVersion
+    libraryDependencies += "com.typesafe" %% "play-plugins-util" % buildVersion
   )
 }
