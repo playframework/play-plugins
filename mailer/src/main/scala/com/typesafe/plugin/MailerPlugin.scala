@@ -88,8 +88,11 @@ trait MailerBuilder extends MailerAPI {
    * @param key
    */
   protected def e(key: String): List[String] = {
-    if (key.contains("-"))
-      context.get.toList.filter(_._1 == key.split("-")(0)).map(e=> e._1.split("-")(1)+"-"+e._2.head)
+	val splitIndex = key.indexOf("-");
+    if (splitIndex >= 0)
+      context.get.toList
+		  .filter(_._1 startsWith key.substring(0, splitIndex)) //get the keys that have the parameter key
+		  .map(e=> e._1.substring(splitIndex+1)+":"+e._2.head) //column cannot be part of a header's name, so we can use this for splitting.
     else
       context.get.get(key).getOrElse(List[String]())
   }
@@ -232,7 +235,10 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
     e("recipients").foreach(setAddress(_) { (address, name) => email.addTo(address, name) })
     e("ccRecipients").foreach(setAddress(_) { (address, name) => email.addCc(address, name) })
     e("bccRecipients").foreach(setAddress(_) { (address, name) => email.addBcc(address, name) })
-    e("header-") foreach (e => email.addHeader(e.split("-")(0), e.split("-")(1)))
+    e("header-") foreach (e => {
+						  val split = e.indexOf(":")
+						  email.addHeader(e.substring(0,split), e.substring(split+1))
+						})
     email.setHostName(smtpHost)
     email.setSmtpPort(smtpPort)
     email.setSSL(smtpSsl)
@@ -298,7 +304,9 @@ case object MockMailer extends MailerBuilder {
     e("recipients").foreach(to => Logger.info("TO:" + to))
     e("ccRecipients").foreach(cc => Logger.info("CC:" + cc))
     e("bccRecipients").foreach(bcc => Logger.info("BCC:" + bcc))
+	e("header-") foreach(header => Logger.info("HEADER:" + header))
     if (bodyText != null && bodyText != "") {
+
       Logger.info("TEXT: " + bodyText)
     }
     if (bodyHtml != null && bodyHtml != "") {
