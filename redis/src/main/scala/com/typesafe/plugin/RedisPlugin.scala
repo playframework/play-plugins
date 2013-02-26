@@ -81,7 +81,7 @@ class RedisPlugin(app: Application) extends CachePlugin {
           throw new IOException("could not serialize: "+ value.toString)
        }
        val redisV = prefix + "-" + new String( Base64Coder.encode( baos.toByteArray() ) )  
-       Logger.warn(redisV)
+       //Logger.debug(redisV)
        sedisPool.withJedisClient { client =>
           client.set(key,redisV)
           if (expiration != 0) client.expire(key,expiration)
@@ -106,8 +106,12 @@ class RedisPlugin(app: Application) extends CachePlugin {
         val b = Base64Coder.decode(data.last)
         data.head match {
           case "oos" => 
-              ois = new ObjectInputStream(new ByteArrayInputStream(b))
-              val r  = ois.readObject()
+              ois = new java.io.ObjectInputStream(new java.io.ByteArrayInputStream(b)) {
+                override protected def resolveClass(desc: ObjectStreamClass) = {
+                  Class.forName(desc.getName(), false, play.api.Play.current.classloader)
+                }
+              }
+              val r = ois.readObject()
               Some(r)
           case "string" => 
               dis = new DataInputStream(new ByteArrayInputStream(b))
@@ -129,8 +133,8 @@ class RedisPlugin(app: Application) extends CachePlugin {
         }
         
       } catch {case ex: Exception => 
-        Logger.warn("could not deserialize key:"+ key+ " ex:"+ex.toString)
-        ex.printStackTrace()
+        Logger.debug("could not deserialize key:"+ key+ " ex:"+ex.toString)
+        //ex.printStackTrace()
         None
       } finally {
        if (ois != null) ois.close()
