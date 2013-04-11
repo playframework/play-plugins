@@ -38,6 +38,8 @@ Statsd.time("my.operation.i.dont.want.to.time.myself") {
   // do some stuff...
 } // This will get timed automatically.
 Statsd.gauge("my.value", 42)  // Record 42 for my.value
+Statsd.gauge("my.value", 10, true)  // Increment my.value by 10
+Statsd.gauge("my.value", -10, true)  // Decrement my.value by 10
 
 p(note). Any errors will be logged, but will not cause the app to fail.
 
@@ -59,6 +61,8 @@ String result = Statsd.time("my.operation.i.dont.want.to.time.myself", new F.Fun
     return "some result";
   }}); // This will get timed automatically.
 Statsd.gauge("my.value", 42L)  // Record 42 for my.value
+Statsd.gauge("my.value", 10L, true)  // Increment my.value by 10
+Statsd.gauge("my.value", -10L, true)  // Decrement my.value by 10
 
 p(note). Any errors will be logged, but will not cause the app to fail.
 

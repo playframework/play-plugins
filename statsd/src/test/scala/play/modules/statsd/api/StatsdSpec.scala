@@ -14,6 +14,14 @@ class StatsdSpec extends Specification {
         receive() mustEqual "statsd.test:42|g"
       }
     }
+    "send delta gauge value" in new Setup {
+      running(fakeApp) {
+        Statsd.gauge("test", 10, true)
+        receive() mustEqual "statsd.test:+10|g"
+        Statsd.gauge("test", -10, true)
+        receive() mustEqual "statsd.test:-10|g"
+      }
+    }    
     "send increment by one message" in new Setup {
       running(fakeApp) {
         Statsd.increment("test")
