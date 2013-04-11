@@ -78,6 +78,24 @@ trait StatsdClient {
   def gauge(key: String, value: Long) {
     safely { maybeSend(statFor(key, value, GaugeSuffix, 1.0), 1.0) }
   }
+  
+  /**
+   * Record the given value.
+   *
+   * @param key The stat key to update.
+   * @param value The value to record for the stat.
+   */
+  def gauge(key: String, value: Long, delta: Boolean) {
+  	if (!delta) {
+    	safely { maybeSend(statFor(key, value, GaugeSuffix, 1.0), 1.0) }
+    } else {
+        if (value >= 0) {
+	        safely { maybeSend(statFor(key, "+".concat(value.toString), GaugeSuffix, 1.0), 1.0) }
+        } else {
+        	safely { maybeSend(statFor(key, value.toString, GaugeSuffix, 1.0), 1.0) }
+        }		    
+    }
+  }
 
   /*
    * ****************************************************************
@@ -92,11 +110,21 @@ trait StatsdClient {
    * If sampling rate is less than 1, it provides something like {@code key:value|type|@rate}
    */
   private def statFor(key: String, value: Long, suffix: String, samplingRate: Double): String = {
+    statFor(key, value.toString, suffix, samplingRate)
+  }
+  
+  /*
+   * Creates the stat string to send to statsd.
+   * For counters, it provides something like {@code key:value|c}.
+   * For timing, it provides something like {@code key:millis|ms}.
+   * If sampling rate is less than 1, it provides something like {@code key:value|type|@rate}
+   */
+  private def statFor(key: String, value: String, suffix: String, samplingRate: Double): String = {
     samplingRate match {
       case x if x >= 1.0 => "%s.%s:%s|%s".format(statPrefix, key, value, suffix)
       case _ => "%s.%s:%s|%s|@%f".format(statPrefix, key, value, suffix, samplingRate)
     }
-  }
+  }  
 
   /*
    * Probabilistically calls the {@code send} function. If the sampling rate

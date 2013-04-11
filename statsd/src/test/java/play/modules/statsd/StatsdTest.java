@@ -46,6 +46,14 @@ public class StatsdTest {
         Statsd.gauge("test", 42);
         assertThat(receive(), equalTo("statsd.test:42|g"));
     }
+    
+    @Test
+    public void gaugeWithDeltaShouldSendGaugeMessage() throws Exception {
+        Statsd.gauge("test", 10, true);
+        assertThat(receive(), equalTo("statsd.test:+10|g"));
+        Statsd.gauge("test", -10, true);
+        assertThat(receive(), equalTo("statsd.test:-10|g"));
+    }
 
     @Test
     public void incrementShouldSendIncrementByOneMessage() throws Exception {
