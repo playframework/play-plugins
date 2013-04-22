@@ -81,7 +81,7 @@ class RedisPlugin(app: Application) extends CachePlugin {
           throw new IOException("could not serialize: "+ value.toString)
        }
        val redisV = prefix + "-" + new String( Base64Coder.encode( baos.toByteArray() ) )  
-       Logger.warn(redisV)
+       Logger.debug(redisV)
        sedisPool.withJedisClient { client =>
           client.set(key,redisV)
           if (expiration != 0) client.expire(key,expiration)
