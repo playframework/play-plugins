@@ -1,27 +1,21 @@
 # Dust Plugin
 
-This plugin provides build time compilation for [Dust](https://github.com/akdubya/dustjs) templates.
-
-
+This plugin provides build time compilation for the LinkedIn fork of [Dust](https://github.com/linkedin/dustjs) templates.
 
 # How to install
 
 * add 
 
-play 2.0.2:
+play 2.1:
 
-```addSbtPlugin("com.typesafe" % "play-plugins-dust" % "1.4")```
-
-play 2.0.1:
-
-```addSbtPlugin("com.typesafe" % "play-plugins-dust" % "1.0-SNAPSHOT")``` 
+```addSbtPlugin("com.typesafe" % "play-plugins-dust" % "1.5")```
 
 to your plugin.sbt
 
 # How to Use
 
-* Include dust. Note that this is not provided by the sbt plugin. It can be found here: [dust-core-0.6.0.min.js](https://raw.github.com/typesafehub/play-plugins/master/dust/sample/public/javascripts/dust-core-0.6.0.min.js) 
-```<script src="@routes.Assets.at("javascripts/dust-core-0.6.0.min.js")"></script>
+* Include dust. Note that this is not provided by the sbt plugin. It can be found here: [dust-core-1.2.3.min.js](https://raw.github.com/typesafehub/play-plugins/master/dust/sample/public/javascripts/dust-core-1.2.3.min.js) 
+```<script src="@routes.Assets.at("javascripts/dust-core-1.2.3.min.js")"></script>
 ```
 
 * Put your dust template .tl files under the ```app/assets``` directory
@@ -41,10 +35,27 @@ to your plugin.sbt
   });
 ```
 
+# Settings
+
+## dustOutputRelativePath
+
+Specify path relative to public assets folder to place compiled javascript templates.
+
+Example:
+
+    DustPlugin.dustOutputRelativePath := "javascripts/templates/"
+
+## dustNativePath
+
+Elect to use a native Dust.js compiler (via Node) if installed.
+
+Example:
+
+    DustPlugin.dustNativePath := Some("/usr/local/shared/npm/bin/dustc")
 
 # Sample
 
-For an example, see the bundled sample app
+For an example, see the bundled sample app.
 
 ## Licence
 
