@@ -8,11 +8,9 @@ version := "1.5"
 
 organization := "com.typesafe"
 
-resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
-
 scalacOptions ++= Seq("-deprecation")
 
-addSbtPlugin("play" % "sbt-plugin" % "2.1.1")
+addSbtPlugin("play" % "sbt-plugin" % "2.1-PRODUCTDEV")
 
 libraryDependencies += "commons-io" % "commons-io" % "2.4"
 
