@@ -4,7 +4,7 @@ import scala.Some
 
 object StatsdBuild extends Build {
 
-  val buildVersion =  "2.1.0"
+  val buildVersion =  "2.1.1"
   val playVersion =  "2.1.0"
   
   val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
