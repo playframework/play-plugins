@@ -26,7 +26,8 @@ object StatsdBuild extends Build {
         "play"  %% "play-test"    % playVersion   % "test"
     ),
     parallelExecution in test := false,
-    testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v")
+    testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v"),
+    javacOptions in Compile ++= Seq("-source", "1.6", "-target", "1.6")
   )
 
   lazy val sample = play.Project(name = "play-statsd-sample", path = file("sample/sample-statsd")).settings(
