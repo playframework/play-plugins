@@ -15,6 +15,7 @@ The following are configuration flags that belong in @conf/application.conf@:
 * @statsd.enabled@: Should be @true@ to use this module. Can be @false@ for testing.
 * @statsd.stat.prefix@: The prefix for all stats sent by this app. They will appear in a folder of the same name on graphite.
 * @statsd.routes.prefix@: The prefix to be attached to all routes logged by the StatsdFilter.  By default this is "routes".  This prefix is in addition to the main prefix (so if that's foo, then the default will be foo.routes).
+* @statsd.routes.pathSeparator@: The separator character that's used to replace "/" in routes logged by the StatsdFilter.  By default this is ".".
 * @statsd.routes.combined.prefix@: The prefix to be attached to combined http request logging.  By default this is "routes.combined".
 * @statsd.host@: The hostname of the statsd server.
 * @statsd.port@: The port for the statsd server.

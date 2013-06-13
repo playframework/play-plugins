@@ -28,6 +28,16 @@ class StatsdFilter extends EssentialFilter {
     if (prefix.length() == 0) prefix else prefix + "."
   }).getOrElse(default)
 
+  lazy val pathSeparator: Char = (for {
+    app    <- Play.maybeApplication
+    pathSeparatorString <- app.configuration.getString("statsd.routes.pathSeparator")
+  } yield {
+    if (pathSeparatorString.length != 1) {
+        throw new IllegalStateException("pathSeparator [%s] is not a character".format(pathSeparatorString))
+      }
+      pathSeparatorString.charAt(0)
+  }).getOrElse('.')
+
   def apply(next: EssentialAction) = new EssentialAction {
     def apply(rh: RequestHeader) = {
 
@@ -40,7 +50,7 @@ class StatsdFilter extends EssentialFilter {
         prefix + keyCache.get(cacheKey).getOrElse {
           val key = statsKeyFromComments(rh.tags(Routes.ROUTE_COMMENTS)).getOrElse {
             // Convert paths of form GET /foo/bar/$paramname<regexp>/blah to foo.bar.paramname.blah.get
-            val p = path.replaceAll("""\$([^<]+)<[^>]+>""", "$1").replace('/', '.').dropWhile(_ == '.')
+            val p = path.replaceAll("""\$([^<]+)<[^>]+>""", "$1").replace('/', pathSeparator).dropWhile(_ == pathSeparator)
             val normalisedPath = if (p.lastOption.filter(_ != '.').isDefined) p + '.' else p
             normalisedPath + verb.toLowerCase(Locale.ENGLISH)
           }
