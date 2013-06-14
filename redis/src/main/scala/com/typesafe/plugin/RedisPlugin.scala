@@ -81,7 +81,6 @@ class RedisPlugin(app: Application) extends CachePlugin {
           throw new IOException("could not serialize: "+ value.toString)
        }
        val redisV = prefix + "-" + new String( Base64Coder.encode( baos.toByteArray() ) )  
-       Logger.warn(redisV)
        sedisPool.withJedisClient { client =>
           client.set(key,redisV)
           if (expiration != 0) client.expire(key,expiration)
@@ -100,34 +99,37 @@ class RedisPlugin(app: Application) extends CachePlugin {
       var ois: ObjectInputStream = null
       var dis: DataInputStream = null
       try {
-        val data: Seq[String] =  sedisPool.withJedisClient { client =>
-            client.get(key)
-        }.split("-")
-        val b = Base64Coder.decode(data.last)
-        data.head match {
-          case "oos" => 
-              ois = new ObjectInputStream(new ByteArrayInputStream(b))
-              val r  = ois.readObject()
-              Some(r)
-          case "string" => 
-              dis = new DataInputStream(new ByteArrayInputStream(b))
-              val r  = dis.readUTF()
-              Some(r)
-          case "int" =>  
-              dis = new DataInputStream(new ByteArrayInputStream(b))
-               val r  = dis.readInt
-              Some(r)
-          case "long" => 
-              dis = new DataInputStream(new ByteArrayInputStream(b))
-              val r  = dis.readLong
-              Some(r)
-          case "boolean" =>   
-              dis = new DataInputStream(new ByteArrayInputStream(b))
-              val r  = dis.readBoolean
-              Some(r)
-          case _ => throw new IOException("can not recognize value")
-        }
-        
+        val rawData = sedisPool.withJedisClient { client => client.get(key) }
+        rawData match {
+            case null =>
+                None
+            case _ =>
+                val data: Seq[String] =  rawData.split("-")
+                val b = Base64Coder.decode(data.last)
+                data.head match {
+                  case "oos" => 
+                      ois = new ObjectInputStream(new ByteArrayInputStream(b))
+                      val r  = ois.readObject()
+                      Some(r)
+                  case "string" => 
+                      dis = new DataInputStream(new ByteArrayInputStream(b))
+                      val r  = dis.readUTF()
+                      Some(r)
+                  case "int" =>  
+                      dis = new DataInputStream(new ByteArrayInputStream(b))
+                       val r  = dis.readInt
+                      Some(r)
+                  case "long" => 
+                      dis = new DataInputStream(new ByteArrayInputStream(b))
+                      val r  = dis.readLong
+                      Some(r)
+                  case "boolean" =>   
+                      dis = new DataInputStream(new ByteArrayInputStream(b))
+                      val r  = dis.readBoolean
+                      Some(r)
+                  case _ => throw new IOException("can not recognize value")
+                }  
+        }        
       } catch {case ex: Exception => 
         Logger.warn("could not deserialize key:"+ key+ " ex:"+ex.toString)
         ex.printStackTrace()
