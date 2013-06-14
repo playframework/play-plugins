@@ -4,7 +4,7 @@ This plugin provides support for [Redis](http://redis.io/) using the best Java d
 
 # Features
 
-*  Provides a Redis-based Cache API (supported types: String, Int, Long, Boolean and Serializable) ie.
+###  Provides a Redis-based Cache API (supported types: String, Int, Long, Boolean and Serializable) ie.
 
 ```java
 //java
@@ -18,9 +18,28 @@ and
 val o = play.api.cache.Cache.getAs[String]("mykey")
 ```
 
-* configurable ( variables: ```redis.host```, ```redis.port```, ```redis.timeout```, ```redis.password```, defaults are ```localhost```, ```6379```, ```2000```, ```nul``` )
+#### Configurable
 
-* Allows direct access to Jedis and Sedis: 
+* Point to your Redis server using configuration settings  ```redis.host```, ```redis.port``` and ```redis.password``` (defaults: ```localhost```, ```6379``` and ```null``` )
+* Alternatively, specify a URI-based configuration using ```redis.uri``` (for example: ```redis.uri="redis://user:password@localhost:6379"```).
+* Set the timeout in milliseconds using ```redis.timeout``` (default is 2000).
+* Configure any aspect of the connection pool. See [the documentation for commons-pool ```GenericObjectPool```](http://commons.apache.org/proper/commons-pool/apidocs/org/apache/commons/pool/impl/GenericObjectPool.html), the underlying pool implementation, for more information on each setting.
+    * redis.pool.maxIdle
+    * redis.pool.minIdle
+    * redis.pool.maxActive
+    * redis.pool.maxWait
+    * redis.pool.testOnBorrow
+    * redis.pool.testOnReturn
+    * redis.pool.testWhileIdle
+    * redis.pool.timeBetweenEvictionRunsMillis
+    * redis.pool.numTestsPerEvictionRun
+    * redis.pool.minEvictableIdleTimeMillis
+    * redis.pool.softMinEvictableIdleTimeMillis
+    * redis.pool.lifo
+    * redis.pool.whenExhaustedAction (valid options: "fail", "block" (default), "grow")
+
+
+#### Allows direct access to Jedis and Sedis: 
 
 ```java
 //java
