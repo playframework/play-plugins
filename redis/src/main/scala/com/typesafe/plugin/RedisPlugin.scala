@@ -6,6 +6,7 @@ import redis.clients.jedis._
 import play.api.cache._
 import java.util._
 import java.io._
+import java.net.URI
 import biz.source_code.base64Coder._
 
 /**
@@ -15,17 +16,32 @@ import biz.source_code.base64Coder._
  * - String, Int, Boolean and long
  */
 class RedisPlugin(app: Application) extends CachePlugin {
-
  
- private lazy val host = app.configuration.getString("redis.host").getOrElse("localhost")
- private lazy val port = app.configuration.getInt("redis.port").getOrElse(6379)
- private lazy val timeout = app.configuration.getInt("redis.timeout").getOrElse(2000)
- private lazy val password = app.configuration.getString("redis.password").getOrElse(null)
-
+ private lazy val redisUri = app.configuration.getString("redis.uri").map { new URI(_) }
+ 
+ private lazy val host = app.configuration.getString("redis.host")
+                         .orElse(redisUri.map{_.getHost()})
+                         .getOrElse("localhost")
+                         
+ private lazy val port = app.configuration.getInt("redis.port")
+                         .orElse(redisUri.map{_.getPort()}.filter{_ != -1})
+                         .getOrElse(6379)
+                         
+ private lazy val password = app.configuration.getString("redis.password")
+                            .orElse(redisUri.map{ _.getUserInfo() }.filter{_ != null}.filter{ _ contains ":" }.map{_.split(":", 2)(1)})
+                            .getOrElse(null)
+                            
+ private lazy val timeout = app.configuration.getInt("redis.timeout")
+                            .getOrElse(2000)
+  
+ 
  /**
   * provides access to the underlying jedis Pool
   */
- lazy val jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password)
+ lazy val jedisPool = {
+   Logger.info(s"Initialising Redis with host=$host port=$port timeout=$timeout")
+   new JedisPool(new JedisPoolConfig(), host, port, timeout, password)
+ }
 
   /**
   * provides access to the sedis Pool
