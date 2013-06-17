@@ -6,6 +6,7 @@ import redis.clients.jedis._
 import play.api.cache._
 import java.util._
 import java.io._
+import java.net.URI
 import biz.source_code.base64Coder._
 
 /**
@@ -21,11 +22,23 @@ class RedisPlugin(app: Application) extends CachePlugin {
  private lazy val port = app.configuration.getInt("redis.port").getOrElse(6379)
  private lazy val timeout = app.configuration.getInt("redis.timeout").getOrElse(2000)
  private lazy val password = app.configuration.getString("redis.password").getOrElse(null)
+ private lazy val uri = app.configuration.getString("redis.uri")
 
  /**
   * provides access to the underlying jedis Pool
   */
- lazy val jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password)
+ lazy val jedisPool =  uri match {
+   case None => new JedisPool(new JedisPoolConfig(), host, port, timeout, password)
+   case Some(puri: String) =>
+     val parsedUri = new URI(puri)
+     new JedisPool(
+       new JedisPoolConfig(),
+       parsedUri.getHost(),
+       parsedUri.getPort(),
+       timeout,
+       parsedUri.getUserInfo().split(":",2)(1)
+     )
+ }
 
   /**
   * provides access to the sedis Pool
