@@ -4,19 +4,15 @@ sbtPlugin := true
 
 name := "play-plugins-dust"
 
-version := "1.4.1-09122012"
+version := "1.5"
 
 organization := "com.typesafe"
 
-resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+scalacOptions ++= Seq("-deprecation")
 
-libraryDependencies <++= (scalaVersion) { 
-	case (scalaVersion) => Seq(
-		sbtPluginExtra("play" % "sbt-plugin" % "2.1-09092012" % "provided", "0.12", scalaVersion)
-	)
-}
+addSbtPlugin("play" % "sbt-plugin" % "2.1-PRODUCTDEV")
 
-libraryDependencies += "commons-io" % "commons-io" % "2.2"
+libraryDependencies += "commons-io" % "commons-io" % "2.4"
 
 libraryDependencies += "org.specs2" %% "specs2" % "1.12.3" % "test"
 

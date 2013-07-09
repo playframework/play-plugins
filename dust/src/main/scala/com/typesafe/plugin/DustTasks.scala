@@ -1,22 +1,44 @@
 package com.typesafe.plugin
 
-import java.io.File
-import java.io.FileInputStream
-import java.io.InputStreamReader
+import java.io.{ File, FileInputStream, InputStreamReader }
 import org.apache.commons.io.FilenameUtils
 import org.mozilla.javascript.tools.shell.Global
-import org.mozilla.javascript.Context
-import org.mozilla.javascript.JavaScriptException
-import org.mozilla.javascript.Scriptable
-import org.mozilla.javascript.ScriptableObject
+import org.mozilla.javascript.{ Context, JavaScriptException, Scriptable, ScriptableObject}
 
 import sbt._
-import PlayProject._
+import sbt.PlayExceptions.AssetCompilationException
 
 trait DustTasks extends DustKeys {
-
-  def compile(name: String, source: String): Either[(String, Int, Int), String] = {
-
+  def handleCompileError(message: String) = {
+    // dust.js has weird error reporting where the line/column are part of the message, so we have to use a Regex to find them
+    val DustCompileError = ".* At line : (\\d+), column : (\\d+)".r
+    
+    message match {
+      case DustCompileError(line, column) => Left(message, line.toInt, column.toInt)
+      case _ => Left(message, 0, 0) // Some other weird error, we have no line/column info now.
+    }
+  }
+  
+  def compile(name: String, source: java.io.File, nativePath: Option[String] = None): Either[(String, Int, Int), String] = {
+    nativePath match {
+      case Some(nativeCompiler) if (new java.io.File(nativeCompiler).exists) =>
+        compileNative(name, source.getPath(), nativeCompiler).left.map {
+          case (msg, line, column) => throw AssetCompilationException(Some(source),
+            msg,
+            Some(line),
+            Some(column))
+        }
+      case _ =>
+        compileEmbedded(name, IO.read(source)).left.map {
+          case (msg, line, column) => throw AssetCompilationException(Some(source),
+            msg,
+            Some(line),
+            Some(column))
+        }
+    }
+  }
+  
+  def compileEmbedded(name: String, source: String): Either[(String, Int, Int), String] = {
     import org.mozilla.javascript._
     import org.mozilla.javascript.tools.shell._
 
@@ -32,7 +54,7 @@ trait DustTasks extends DustKeys {
 
     ctx.evaluateReader(
       scope,
-      new InputStreamReader(this.getClass.getClassLoader.getResource("dust-full-0.6.0.js").openConnection().getInputStream()),
+      new InputStreamReader(this.getClass.getClassLoader.getResource("dust-full-1.2.3.js").openConnection().getInputStream()),
       "dust.js",
       1, null)
 
@@ -46,14 +68,24 @@ trait DustTasks extends DustKeys {
         val jsError = e.getValue.asInstanceOf[Scriptable]
         val message = ScriptableObject.getProperty(jsError, "message").toString
         
-        // dust.js has weird error reporting where the line/column are part of the message, so we have to use a Regex to find them
-        val DustCompileError = ".* At line : (\\d+), column : (\\d+)".r
-        
-        message match {
-          case DustCompileError(line, column) => Left(message, line.toInt, column.toInt)
-          case _ => Left(message, 0, 0) // Some other weird error, we have no line/column info now.
-        }
+        handleCompileError(message)
       }
+    }
+  }
+  
+  def compileNative(name: String, sourceFile: String, nativePath: String): Either[(String, Int, Int), String] = {
+    import scala.sys.process._
+    val pb = Process(nativePath + " --name=" + name + " " + sourceFile)
+    var out = List[String]()
+    var err = List[String]()
+    val exit = pb ! ProcessLogger((s) => out ::= s, (s) => err ::= s)
+    if (exit != 0) {
+      val message = err.mkString("");
+     
+      handleCompileError(message)
+    }
+    else {
+      Right(out.mkString(""))
     }
   }
 
@@ -64,11 +96,12 @@ trait DustTasks extends DustKeys {
       sourceFileWithForwardSlashes.replace(assetsDirWithForwardSlashes + "/", "")
     )
   }
-
+  
   import Keys._
 
-  lazy val DustCompiler = (sourceDirectory in Compile, resourceManaged in Compile, cacheDirectory, dustFileRegexFrom, dustFileRegexTo, dustAssetsDir, dustAssetsGlob) map {
-    (src, resources, cache, fileReplaceRegexp, fileReplaceWith, assetsDir, files) =>
+  lazy val DustCompiler = (sourceDirectory in Compile, resourceManaged in Compile, cacheDirectory, dustFileRegexFrom, dustFileRegexTo, dustAssetsDir, dustAssetsGlob, dustOutputRelativePath, dustNativePath) map {
+    (src, resources, cache, fileReplaceRegexp, fileReplaceWith, assetsDir, files, outputRelativePath, nativePath) =>
+      
       val cacheFile = cache / "dust"
 
       def naming(name: String) = name.replaceAll(fileReplaceRegexp, fileReplaceWith)
@@ -77,22 +110,16 @@ trait DustTasks extends DustKeys {
 
       val (previousRelation, previousInfo) = Sync.readInfo(cacheFile)(FileInfo.lastModified.format)
       val previousGeneratedFiles = previousRelation._2s
-
+      
       if (previousInfo != currentInfos) {
 
         previousGeneratedFiles.foreach(IO.delete)
 
         val generated = (files x relativeTo(assetsDir)).flatMap {
           case (sourceFile, name) => {
-            val msg = compile(templateName(sourceFile.getPath, assetsDir.getPath), IO.read(sourceFile)).left.map {
-              case (msg, line, column) => throw AssetCompilationException(Some(sourceFile),
-                msg,
-                line,
-                column)
-            }.right.get
-
-            val out = new File(resources, "public/" + naming(name))
-            IO.write(out, msg)
+            val msg = compile(templateName(sourceFile.getPath, assetsDir.getPath), sourceFile, nativePath)
+            val out = new File(resources, "public/" + outputRelativePath + naming(name))
+            IO.write(out, msg.right.get)
             Seq(sourceFile -> out)
           }
         }

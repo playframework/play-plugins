@@ -1,5 +1,5 @@
 //
-// Dust - Asynchronous Templating v0.6.0
+// Dust - Asynchronous Templating v1.2.3
 // http://akdubya.github.com/dustjs
 //
 // Copyright (c) 2010, Aleksander Williams
@@ -8,13 +8,15 @@
 
 var dust = {};
 
-function getGlobal(){	
-  return (function(){	
-    return this.dust;	
-      }).call(null);
+function getGlobal(){
+  return (function(){
+    return this.dust;
+  }).call(null);
 }
 
 (function(dust) {
+
+dust.helpers = {};
 
 dust.cache = {};
 
@@ -48,7 +50,7 @@ dust.compileFn = function(source, name) {
       tmpl(master.head, Context.wrap(context)).end();
     });
     return master;
-  }
+  };
 };
 
 dust.load = function(name, chunk, context) {
@@ -87,7 +89,7 @@ dust.nextTick = (function() {
   } else {
     return function(callback) {
       setTimeout(callback,0);
-    }
+    };
   }
 } )();
 
@@ -97,17 +99,21 @@ dust.isEmpty = function(value) {
   return (!value);
 };
 
+// apply the filter chain and return the output string
 dust.filter = function(string, auto, filters) {
   if (filters) {
     for (var i=0, len=filters.length; i<len; i++) {
       var name = filters[i];
       if (name === "s") {
         auto = null;
-      } else {
+      }
+      // fail silently for invalid filters
+      else if (typeof dust.filters[name] === 'function') {
         string = dust.filters[name](string);
       }
     }
   }
+  // by default always apply the h filter, unless asked to unescape with |s
   if (auto) {
     string = dust.filters[auto](string);
   }
@@ -160,7 +166,6 @@ Context.prototype.getPath = function(cur, down) {
       len = down.length;
 
   if (cur && len === 0) return ctx.head;
-  if (!ctx.isObject) return undefined;
   ctx = ctx.head;
   var i = 0;
   while(ctx && i < len) {
@@ -171,12 +176,6 @@ Context.prototype.getPath = function(cur, down) {
 };
 
 Context.prototype.push = function(head, idx, len) {
-  if( head ){
-   // loop index for a block section
-   head['$idx'] = idx;
-   // loop size for a block section
-   head['$len'] = len;
-  }
   return new Context(new Stack(head, this.stack, idx, len), this.global, this.blocks);
 };
 
@@ -188,7 +187,12 @@ Context.prototype.current = function() {
   return this.stack.head;
 };
 
-Context.prototype.getBlock = function(key) {
+Context.prototype.getBlock = function(key, chk, ctx) {
+  if (typeof key === "function") {
+    key = key(chk, ctx).data.join("");
+    chk.data = []; //ie7 perf
+  }
+
   var blocks = this.blocks;
 
   if (!blocks) return;
@@ -200,7 +204,8 @@ Context.prototype.getBlock = function(key) {
 };
 
 Context.prototype.shiftBlocks = function(locals) {
-  var blocks = this.blocks;
+  var blocks = this.blocks,
+      newBlocks;
 
   if (locals) {
     if (!blocks) {
@@ -232,7 +237,7 @@ Stub.prototype.flush = function() {
 
   while (chunk) {
     if (chunk.flushable) {
-      this.out += chunk.data;
+      this.out += chunk.data.join(""); //ie7 perf
     } else if (chunk.error) {
       this.callback(chunk.error);
       this.flush = function() {};
@@ -255,7 +260,7 @@ Stream.prototype.flush = function() {
 
   while(chunk) {
     if (chunk.flushable) {
-      this.emit('data', chunk.data);
+      this.emit('data', chunk.data.join("")); //ie7 perf
     } else if (chunk.error) {
       this.emit('error', chunk.error);
       this.flush = function() {};
@@ -270,10 +275,16 @@ Stream.prototype.flush = function() {
 };
 
 Stream.prototype.emit = function(type, data) {
-  var events = this.events;
-
-  if (events && events[type]) {
-    events[type](data);
+  if (!this.events) return false;
+  var handler = this.events[type];
+  if (!handler) return false;
+  if (typeof handler == 'function') {
+    handler(data);
+  } else {
+    var listeners = handler.slice(0);
+    for (var i = 0, l = listeners.length; i < l; i++) {
+      listeners[i](data);
+    }
   }
 };
 
@@ -281,14 +292,31 @@ Stream.prototype.on = function(type, callback) {
   if (!this.events) {
     this.events = {};
   }
-  this.events[type] = callback;
+  if (!this.events[type]) {
+    this.events[type] = callback;
+  } else if(typeof this.events[type] === 'function') {
+    this.events[type] = [this.events[type], callback];
+  } else {
+    this.events[type].push(callback);
+  }
+  return this;
+};
+
+Stream.prototype.pipe = function(stream) {
+  this.on("data", function(data) {
+    stream.write(data, "utf8");
+  }).on("end", function() {
+    stream.end();
+  }).on("error", function(err) {
+    stream.error(err);
+  });
   return this;
 };
 
 function Chunk(root, next, taps) {
   this.root = root;
   this.next = next;
-  this.data = '';
+  this.data = []; //ie7 perf
   this.flushable = false;
   this.taps = taps;
 }
@@ -299,7 +327,7 @@ Chunk.prototype.write = function(data) {
   if (taps) {
     data = taps.go(data);
   }
-  this.data += data;
+  this.data.push(data);
   return this;
 };
 
@@ -344,7 +372,10 @@ Chunk.prototype.render = function(body, context) {
 
 Chunk.prototype.reference = function(elem, context, auto, filters) {
   if (typeof elem === "function") {
-    elem = elem(this, context, null, {auto: auto, filters: filters});
+    elem.isFunction = true;
+    // Changed the function calling to use apply with the current context to make sure 
+    // that "this" is wat we expect it to be inside the function
+    elem = elem.apply(context.current(), [this, context, null, {auto: auto, filters: filters}]);
     if (elem instanceof Chunk) {
       return elem;
     }
@@ -357,35 +388,72 @@ Chunk.prototype.reference = function(elem, context, auto, filters) {
 };
 
 Chunk.prototype.section = function(elem, context, bodies, params) {
+  // anonymous functions
   if (typeof elem === "function") {
-    elem = elem(this, context, bodies, params);
+    elem = elem.apply(context.current(), [this, context, bodies, params]);
+    // functions that return chunks are assumed to have handled the body and/or have modified the chunk
+    // use that return value as the current chunk and go to the next method in the chain
     if (elem instanceof Chunk) {
       return elem;
     }
   }
-
   var body = bodies.block,
       skip = bodies['else'];
 
+  // a.k.a Inline parameters in the Dust documentations
   if (params) {
     context = context.push(params);
   }
 
+  /*
+  Dust's default behavior is to enumerate over the array elem, passing each object in the array to the block.
+  When elem resolves to a value or object instead of an array, Dust sets the current context to the value 
+  and renders the block one time.
+  */
+  //non empty array is truthy, empty array is falsy
   if (dust.isArray(elem)) {
-    if (body) {
+     if (body) {
       var len = elem.length, chunk = this;
-      for (var i=0; i<len; i++) {
-        chunk = body(chunk, context.push(elem[i], i, len));
+      if (len > 0) {
+        // any custom helper can blow up the stack 
+        // and store a flattened context, guard defensively
+        if(context.stack.head) {
+         context.stack.head['$len'] = len;
+        }
+        for (var i=0; i<len; i++) {
+          if(context.stack.head) {
+           context.stack.head['$idx'] = i;
+          }
+          chunk = body(chunk, context.push(elem[i], i, len));
+        }
+        if(context.stack.head) {
+         context.stack.head['$idx'] = undefined;
+         context.stack.head['$len'] = undefined;
+        }
+        return chunk;
+      } 
+      else if (skip) {
+         return skip(this, context);
       }
-      return chunk;
-    }
-  } else if (elem === true) {
-    if (body) return body(this, context);
-  } else if (elem || elem === 0) {
-    if (body) return body(this, context.push(elem));
+     }
+   }
+   // true is truthy but does not change context
+   else if (elem  === true) {
+     if (body) { 
+        return body(this, context);
+     }
+   }
+   // everything that evaluates to true are truthy ( e.g. Non-empty strings and Empty objects are truthy. )
+   // zero is truthy
+   // for anonymous functions that did not returns a chunk, truthiness is evaluated based on the return value
+   //
+   else if (elem || elem === 0) {
+     if (body) return body(this, context.push(elem));
+   // nonexistent, scalar false value, scalar empty string, null,
+   // undefined are all falsy
   } else if (skip) {
-    return skip(this, context);
-  }
+     return skip(this, context);
+   }  
   return this;
 };
 
@@ -427,26 +495,38 @@ Chunk.prototype.block = function(elem, context, bodies) {
 };
 
 Chunk.prototype.partial = function(elem, context, params) {
-  var ctx = context.stack, tempHead = ctx.head;
+  var partialContext;
   if (params){
     //put the params context second to match what section does. {.} matches the current context without parameters
-    //remove head
-    context = context.rebase(ctx.tail);
+    // start with an empty context
+    partialContext = dust.makeBase(context.global);
+    partialContext.blocks = context.blocks;
+    if (context.stack && context.stack.tail){
+      // grab the stack(tail) off of the previous context if we have it
+      partialContext.stack = context.stack.tail;
+    }
     //put params on
-    context = context.push(params);
+    partialContext = partialContext.push(params);
     //reattach the head
-    context = context.push(tempHead);
+    partialContext = partialContext.push(context.stack.head);
+  } else {
+    partialContext = context;
   }
   if (typeof elem === "function") {
-    return this.capture(elem, context, function(name, chunk) {
-      dust.load(name, chunk, context).end();
+    return this.capture(elem, partialContext, function(name, chunk) {
+      dust.load(name, chunk, partialContext).end();
     });
   }
-  return dust.load(elem, this, context);
+  return dust.load(elem, this, partialContext);
 };
 
 Chunk.prototype.helper = function(name, context, bodies, params) {
-  return dust.helpers[name](this, context, bodies, params);
+  // handle invalid helpers, similar to invalid filters
+  if( dust.helpers[name]){
+   return dust.helpers[name](this, context, bodies, params);
+  } else {
+    return this;
+  }
 };
 
 Chunk.prototype.capture = function(body, context, callback) {
@@ -505,6 +585,7 @@ dust.escapeHtml = function(s) {
 };
 
 var BS = /\\/g,
+    FS = /\//g,
     CR = /\r/g,
     LS = /\u2028/g,
     PS = /\u2029/g,
@@ -518,6 +599,7 @@ dust.escapeJs = function(s) {
   if (typeof s === "string") {
     return s
       .replace(BS, '\\\\')
+      .replace(FS, '\\/')
       .replace(DQ, '\\"')
       .replace(SQ, "\\'")
       .replace(CR, '\\r')
@@ -533,135 +615,8 @@ dust.escapeJs = function(s) {
 })(dust);
 
 if (typeof exports !== "undefined") {
-  dust.helpers = require("./dust-helpers").helpers;
   if (typeof process !== "undefined") {
       require('./server')(dust);
   }
   module.exports = dust;
 }
-(function(dust){
-
-function isSelect(context) {
-  var value = context.current();
-  return typeof value === "object" && value.isSelect === true;    
-}
-
-function filter(chunk, context, bodies, params, filter) {
-  var params = params || {},
-      actual, expected;
-  
-  if (params.key) {
-    actual = context.get(params.key);
-  } else if (isSelect(context)) {
-    actual = context.current().value;
-    if (context.current().isResolved) {
-      filter = function() { return false; };
-    }
-  } else {
-    throw "No key specified for filter and no key found in context from select statement";
-  }
-
-  expected = params.value;
-  if (filter(expected, coerce(actual, params.type, context))) {
-    if (isSelect(context)) {
-      context.current().isResolved = true;
-    }
-    return chunk.render(bodies.block, context);
-  } else if (bodies['else']) {
-    return chunk.render(bodies['else'], context);
-  }
-
-  return chunk.write('');
-}
-
-function coerce (value, type, context) {
-  if (value) {
-    switch (type || typeof(value)) {
-      case 'number': return +value;
-      case 'string': return String(value);
-      case 'boolean': return Boolean(value);
-      case 'date': return new Date(value);
-      case 'context': return context.get(value);
-    }
-  }
-
-  return value;
-}
-
-var helpers = {
-  
-  sep: function(chunk, context, bodies) {
-    if (context.stack.index === context.stack.of - 1) {
-      return chunk;
-    }
-    return bodies.block(chunk, context);
-  },
-
-  idx: function(chunk, context, bodies) {
-    return bodies.block(chunk, context.push(context.stack.index));
-  },
-
-  "if": function( chunk, context, bodies, params ){
-    if( params && params.cond ){
-      var cond = params.cond;
-
-      // resolve dust references in the expression
-      if( typeof cond === "function" ){
-        cond = '';
-        chunk.tap( function( data ){
-          cond += data;
-          return '';
-        } ).render( params.cond, context ).untap();
-        if( cond === '' ){
-          cond = false;
-        }
-      }
-      // eval expressions with no dust references
-      if( eval( cond ) ){
-       return chunk.render( bodies.block, context );
-      }
-      if( bodies['else'] ){
-       return chunk.render( bodies['else'], context );
-      }
-    }
-    // no condition
-    else {
-      if( typeof window !== 'undefined' && window.console ){
-        window.console.log( "No expression given!" );
-      }
-    }
-    return chunk;
-  },
-
-  select: function(chunk, context, bodies, params) {
-    return chunk.render(bodies.block, context.push({ isSelect: true, isResolved: false, value: context.get(params.key) }));
-  },
-
-  eq: function(chunk, context, bodies, params) {
-    return filter(chunk, context, bodies, params, function(expected, actual) { return actual === expected; });
-  },
-
-  lt: function(chunk, context, bodies, params) {
-    return filter(chunk, context, bodies, params, function(expected, actual) { return actual < expected; });
-  },
-
-  lte: function(chunk, context, bodies, params) {
-    return filter(chunk, context, bodies, params, function(expected, actual) { return actual <= expected; });
-  },
-
-  gt: function(chunk, context, bodies, params) {
-    return filter(chunk, context, bodies, params, function(expected, actual) { return actual > expected; });
-  },
-
-  gte: function(chunk, context, bodies, params) {
-    return filter(chunk, context, bodies, params, function(expected, actual) { return actual >= expected; });
-  },
-
-  "else": function(chunk, context, bodies, params) {
-    return filter(chunk, context, bodies, params, function(expected, actual) { return true; });
-  }
-};
-
-dust.helpers = helpers;
-
-})(typeof exports !== 'undefined' ? exports : getGlobal());
