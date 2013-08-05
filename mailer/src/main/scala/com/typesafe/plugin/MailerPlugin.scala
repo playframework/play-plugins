@@ -20,7 +20,7 @@ trait MailerAPI extends MailerApiJavaInterop {
    *
    * @param from
    */
-  def addFrom(from: String): MailerAPI 
+  def setFrom(from: String): MailerAPI 
 
   /**
    * Defines the "reply to" email address.
@@ -115,7 +115,7 @@ trait MailerBuilder extends MailerAPI {
    *
    * @param from
    */
-  def addFrom(from: String): MailerAPI = {
+  def setFrom(from: String): MailerAPI = {
     context.get += ("from"-> List(from))
     this
   }
@@ -125,7 +125,7 @@ trait MailerBuilder extends MailerAPI {
    *
    * @param ccRecipients
    */
-  def addCc(ccRecipients: String*): MailerAPI = {
+  def setCc(ccRecipients: String*): MailerAPI = {
     context.get += ("ccRecipients"->ccRecipients.toList)
     this
   }
@@ -135,7 +135,7 @@ trait MailerBuilder extends MailerAPI {
    *
    * @param bccRecipients
    */
-  def addBcc(bccRecipients: String*): MailerAPI = {
+  def setBcc(bccRecipients: String*): MailerAPI = {
     context.get += ("bccRecipients"->bccRecipients.toList)
     this
   }
@@ -145,7 +145,7 @@ trait MailerBuilder extends MailerAPI {
    *
    * @param recipients
    */
-  def addRecipient(recipients: String*): MailerAPI = {
+  def setRecipient(recipients: String*): MailerAPI = {
     context.get += ("recipients"->recipients.toList)
     this
   }
