@@ -16,20 +16,20 @@ public interface MailerApiJavaInterop {
    *
    * @param ccRecipients
    */
-  public MailerAPI addCc(String... ccRecipients);
+  public MailerAPI setCc(String... ccRecipients);
 
   /**
    * Adds an email recipient in BCC.
    *
    * @param bccRecipients
    */
-  public MailerAPI addBcc(String... bccRecipients);
+  public MailerAPI setBcc(String... bccRecipients);
 
   /**
    * Adds an email recipient ("to" addressee).
    *
    * @param recipients
    */
-  public  MailerAPI addRecipient(String... recipients); 
+  public  MailerAPI setRecipient(String... recipients); 
   
 }

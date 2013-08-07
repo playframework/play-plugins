@@ -8,6 +8,10 @@ play 2.0.x:
 
 * add ```"com.typesafe" %% "play-plugins-mailer" % "2.0.4"``` to your dependencies (```project/Build.scala```)
 
+play 2.1.x:
+
+* add ```"com.typesafe" %% "play-plugins-mailer" % "2.1-RC2"``` to your dependencies (```project/Build.scala```)
+
 
 and then
 * add ```1500:com.typesafe.plugin.CommonsMailerPlugin``` to your ```conf/play.plugins```
@@ -30,8 +34,8 @@ smtp.password (optional)
 import com.typesafe.plugin.*;
 MailerAPI mail = play.Play.application().plugin(MailerPlugin.class).email();
 mail.setSubject("mailer");
-mail.addRecipient("Peter Hausel Junior <noreply@email.com>","example@foo.com");
-mail.addFrom("Peter Hausel <noreply@email.com>");
+mail.setRecipient("Peter Hausel Junior <noreply@email.com>","example@foo.com");
+mail.setFrom("Peter Hausel <noreply@email.com>");
 //sends html
 mail.sendHtml("<html>html</html>" );
 //sends text/text
@@ -46,8 +50,10 @@ mail.send( "text", "<html>html</html>");
 import com.typesafe.plugin._
 val mail = use[MailerPlugin].email
 mail.setSubject("mailer")
-mail.addRecipient("Peter Hausel Junior <noreply@email.com>","example@foo.com")
-mail.addFrom("Peter Hausel <noreply@email.com>")
+mail.setRecipient("Peter Hausel Junior <noreply@email.com>","example@foo.com")
+//or use a list
+mail.setBcc(List("Dummy <example@example.org>", "Dummy2 <example@example.org>"):_*)
+mail.setFrom("Peter Hausel <noreply@email.com>")
 //sends html
 mail.sendHtml("<html>html</html>" )
 //sends text/text
