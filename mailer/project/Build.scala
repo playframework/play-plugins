@@ -13,7 +13,7 @@ object MinimalBuild extends Build {
   
   lazy val root = Project(id = "play-plugins-mailer", base = file("."), settings = Project.defaultSettings).settings(
     version := buildVersion,
-    scalaVersion := "2.10.0",
+    scalaVersion := "2.10.2",
     publishTo <<= (version) { version: String =>
                 val nexus = "http://typesafe.artifactoryonline.com/typesafe/"
                 if (version.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "maven-snapshots/")
@@ -24,7 +24,7 @@ object MinimalBuild extends Build {
     javacOptions ++= Seq("-source","1.6","-target","1.6", "-encoding", "UTF-8"),
     javacOptions += "-Xlint:unchecked",
     libraryDependencies += "play" %% "play" % playVersion % "provided",
-    libraryDependencies += "org.apache.commons" % "commons-email" % "1.2",
+    libraryDependencies += "org.apache.commons" % "commons-email" % "1.3.1",
     libraryDependencies += "com.typesafe" %% "play-plugins-util" % buildVersion
   )
 }
