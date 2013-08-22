@@ -66,7 +66,7 @@ trait MailerAPI extends MailerApiJavaInterop {
   /**
    * Sends an Html email based on the provided data. 
    *
-   * @param bodyText : pass a string or use a Play! text template to generate the template
+   * @param bodyHtml : pass a string or use a Play! text template to generate the template
    *  like view.Mails.templateText(tags).
    * like view.Mails.templateHtml(tags).
    * @return
@@ -196,7 +196,7 @@ trait MailerBuilder extends MailerAPI {
     /**
    * Sends an Html email based on the provided data. 
    *
-   * @param bodyText : pass a string or use a Play! text template to generate the template
+   * @param bodyHtml : pass a string or use a Play! text template to generate the template
    *  like view.Mails.templateText(tags).
    * like view.Mails.templateHtml(tags).
    * @return
