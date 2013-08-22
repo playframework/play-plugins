@@ -66,7 +66,7 @@ trait MailerAPI extends MailerApiJavaInterop {
   /**
    * Sends an Html email based on the provided data. 
    *
-   * @param bodyText : pass a string or use a Play! text template to generate the template
+   * @param bodyHtml : pass a string or use a Play! text template to generate the template
    *  like view.Mails.templateText(tags).
    * like view.Mails.templateHtml(tags).
    * @return
@@ -196,7 +196,7 @@ trait MailerBuilder extends MailerAPI {
     /**
    * Sends an Html email based on the provided data. 
    *
-   * @param bodyText : pass a string or use a Play! text template to generate the template
+   * @param bodyHtml : pass a string or use a Play! text template to generate the template
    *  like view.Mails.templateText(tags).
    * like view.Mails.templateHtml(tags).
    * @return
@@ -235,8 +235,8 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
     e("header-") foreach (e => email.addHeader(e.split("-")(0), e.split("-")(1)))
     email.setHostName(smtpHost)
     email.setSmtpPort(smtpPort)
-    email.setSSL(smtpSsl)
-    email.setTLS(smtpTls)
+    email.setSSLOnConnect(smtpSsl)
+    email.setStartTLSEnabled(smtpTls)
     for(u <- smtpUser; p <- smtpPass) yield email.setAuthenticator(new DefaultAuthenticator(u, p))
     email.setDebug(false)
     email.send
