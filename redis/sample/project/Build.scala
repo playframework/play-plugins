@@ -1,6 +1,5 @@
 import sbt._
 import Keys._
-import PlayProject._
 
 object ApplicationBuild extends Build {
 
@@ -8,11 +7,11 @@ object ApplicationBuild extends Build {
     val appVersion      = "1.0-SNAPSHOT"
 
     val appDependencies = Seq(
-       "com.typesafe" %% "play-plugins-redis" % "2.1-1-RC2"
-      
+       "com.typesafe" %% "play-plugins-redis" % "2.2.0",
+       "com.typesafe.play" %% "play-cache" % "2.2.0"
     )
 
-    val main = PlayProject(appName, appVersion, appDependencies, mainLang = JAVA).settings(
+    val main = play.Project(appName, appVersion, appDependencies).settings(
       // Add your own project settings here      
     )
 
