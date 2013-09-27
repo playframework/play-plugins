@@ -13,6 +13,8 @@ import play.api.Configuration._
 
 trait MailerAPI extends MailerApiJavaInterop {
 
+  protected val headerNameValueSplit = "-value-"
+
   /* Sets a subject for this email.*/
   def setSubject(subject: String): MailerAPI
   /**
@@ -89,7 +91,7 @@ trait MailerBuilder extends MailerAPI {
    */
   protected def e(key: String): List[String] = {
     if (key.contains("-"))
-      context.get.toList.filter(_._1 == key.split("-")(0)).map(e=> e._1.split("-")(1)+"-"+e._2.head)
+      context.get.toList.filter(_._1.split("-")(0) == key.split("-")(0)).map(e=> e._1.split("-", 2)(1)+headerNameValueSplit+e._2.head)
     else
       context.get.get(key).getOrElse(List[String]())
   }
@@ -232,7 +234,10 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
     e("recipients").foreach(setAddress(_) { (address, name) => email.addTo(address, name) })
     e("ccRecipients").foreach(setAddress(_) { (address, name) => email.addCc(address, name) })
     e("bccRecipients").foreach(setAddress(_) { (address, name) => email.addBcc(address, name) })
-    e("header-") foreach (e => email.addHeader(e.split("-")(0), e.split("-")(1)))
+    e("header-") foreach {e =>
+      val headerComponents = e.split(headerNameValueSplit)
+      email.addHeader(headerComponents(0), headerComponents(1))
+    }
     email.setHostName(smtpHost)
     email.setSmtpPort(smtpPort)
     email.setSSL(smtpSsl)
