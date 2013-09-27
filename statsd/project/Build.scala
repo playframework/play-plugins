@@ -3,7 +3,7 @@ import sbt.Keys._
 
 object StatsdBuild extends Build {
 
-  val buildVersion =  "2.2.0-SNAPSHOT"
+  val buildVersion =  "2.2.0"
   val playVersion =  "2.2.0"
   
   val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
