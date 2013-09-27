@@ -20,12 +20,10 @@ object Application extends Controller {
     Ok
   }
 
-  def async = Action {
-    Async {
-      Future {
-        Thread.sleep(2)
-        Ok
-      }
+  def async = Action.async {
+    Future {
+      Thread.sleep(2)
+      Ok
     }
   }
 
@@ -35,13 +33,11 @@ object Application extends Controller {
     Ok
   }
 
-  def asyncFailure = Action {
-    Async {
-      Future {
-        Thread.sleep(2)
-        if (true) throw new RuntimeException
-        Ok
-      }
+  def asyncFailure = Action.async {
+    Future {
+      Thread.sleep(2)
+      if (true) throw new RuntimeException
+      Ok
     }
   }
 

@@ -4,9 +4,9 @@ This is a simple **statsd** module for **Play! Framework 2**. It pulls in config
 
 h2. Getting started
 
-To install, add @"com.typesafe.play.plugins" %% "play-statsd" % "2.1.0"@ to your dependencies, for example:
+To install, add @"com.typesafe.play.plugins" %% "play-statsd" % "2.2.0"@ to your dependencies, for example:
 
-bc.. val appDendencies = Seq(@"com.typesafe.play.plugins" %% "play-statsd" % "2.1.0")
+bc.. val appDendencies = Seq(@"com.typesafe.play.plugins" %% "play-statsd" % "2.2.0")
 
 h2. Configuration
 

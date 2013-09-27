@@ -69,28 +69,18 @@ class StatsdFilter extends EssentialFilter {
         Statsd.increment(totalPrefix + "error")
       }
 
-      def recordStats(result: Result): Result = {
-        result match {
-          case async: AsyncResult => {
-            async.result.onFailure {
-              case t => handleError
-            }
-            async.map(recordStats)
-          }
-          case plain: PlainResult => {
-            val time = System.currentTimeMillis() - start
-            Statsd.timing(key, time)
-            Statsd.timing(totalPrefix + "time", time)
-            val status = plain.header.status
-            Statsd.increment(totalPrefix + status)
-            if (status >= 500) {
-              Statsd.increment(totalPrefix + "error")
-            } else {
-              Statsd.increment(totalPrefix + "success")
-            }
-            plain
-          }
+      def recordStats(result: SimpleResult) = {
+        val time = System.currentTimeMillis() - start
+        Statsd.timing(key, time)
+        Statsd.timing(totalPrefix + "time", time)
+        val status = result.header.status
+        Statsd.increment(totalPrefix + status)
+        if (status >= 500) {
+          Statsd.increment(totalPrefix + "error")
+        } else {
+          Statsd.increment(totalPrefix + "success")
         }
+        result
       }
 
       // Invoke the action
