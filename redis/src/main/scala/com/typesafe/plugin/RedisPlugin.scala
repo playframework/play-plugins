@@ -11,6 +11,15 @@ import biz.source_code.base64Coder._
 import org.apache.commons.lang3.builder._
 import org.apache.commons.pool.impl.GenericObjectPool
 import org.apache.commons.io.input.ClassLoaderObjectInputStream
+import play.api.libs.iteratee._
+import play.api.libs.concurrent._
+import play.api.mvc._
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.ExecutionContext.Implicits.global
+
+case class CachedResult(status: Int,
+                        headers: Map[String, String],
+                        body: Array[Byte]) extends Serializable
 
 /**
  * provides a redis client and a CachePlugin implementation
@@ -89,6 +98,45 @@ class RedisPlugin(app: Application) extends CachePlugin {
     !app.configuration.getString("redisplugin").filter(_ == "disabled").isDefined
   }
 
+  /**
+   * Extracts the content as bytes.
+   */
+  def contentAsBytes(of: Result): Array[Byte] = of match {
+    case r @ SimpleResult(_, bodyEnumerator) => {
+      var readAsBytes = Enumeratee.map[r.BODY_CONTENT](r.writeable.transform(_)).transform(Iteratee.consume[Array[Byte]]())
+      bodyEnumerator(readAsBytes).flatMap(_.run).value1.get
+    }
+    case p:PlainResult => Array[Byte]()
+    case AsyncResult(p) => contentAsBytes(p.await.get)
+  }
+
+  /**
+   * Extracts the Status code of this Result value.
+   */
+  def status(of: Result): Int = of match {
+    case PlainResult(status, _) => status
+    case AsyncResult(p) => status(p.await.get)
+  }
+
+  /**
+   * Extracts all Headers of this Result value.
+   */
+  def headers(of: Result): Map[String, String] = of match {
+    case PlainResult(_, headers) => headers
+    case AsyncResult(p) => headers(p.await.get)
+  }
+
+  def wrapResult(result:Result):CachedResult = {
+    CachedResult(status(result),
+                 headers(result),
+                 contentAsBytes(result))
+  }
+
+  def unwrapResult(cachedResult:CachedResult) = {
+    SimpleResult(ResponseHeader(cachedResult.status, cachedResult.headers),
+                 Enumerator(cachedResult.body))
+  }
+
  /**
   * cacheAPI implementation
   * can serialize, deserialize to/from redis
@@ -102,7 +150,13 @@ class RedisPlugin(app: Application) extends CachePlugin {
      try {
        val baos = new ByteArrayOutputStream()
        var prefix = "oos"
-       if (value.isInstanceOf[Serializable]) {
+       if (value.isInstanceOf[Result]) {
+          oos = new ObjectOutputStream(baos)
+          val wrappedResult = wrapResult(value.asInstanceOf[Result])
+          oos.writeObject(wrappedResult)
+          oos.flush()
+          prefix = "result"
+       } else if (value.isInstanceOf[Serializable]) {
           oos = new ObjectOutputStream(baos)
           oos.writeObject(value)
           oos.flush()
@@ -156,6 +210,10 @@ class RedisPlugin(app: Application) extends CachePlugin {
                 val data: Seq[String] =  rawData.split("-")
                 val b = Base64Coder.decode(data.last)
                 data.head match {
+                  case "result" =>
+                      ois = new ClassLoaderObjectInputStream(play.api.Play.current.classloader, new ByteArrayInputStream(b))
+                      val r  = ois.readObject()
+                      Some(unwrapResult(r.asInstanceOf[CachedResult]))
                   case "oos" =>
                       ois = new ClassLoaderObjectInputStream(play.api.Play.current.classloader, new ByteArrayInputStream(b))
                       val r  = ois.readObject()
