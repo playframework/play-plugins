@@ -10,6 +10,7 @@ import java.net.URI
 import biz.source_code.base64Coder._
 import org.apache.commons.lang3.builder._
 import org.apache.commons.pool.impl.GenericObjectPool
+import org.apache.commons.io.input.ClassLoaderObjectInputStream
 
 /**
  * provides a redis client and a CachePlugin implementation
@@ -156,7 +157,7 @@ class RedisPlugin(app: Application) extends CachePlugin {
                 val b = Base64Coder.decode(data.last)
                 data.head match {
                   case "oos" =>
-                      ois = new ObjectInputStream(new ByteArrayInputStream(b))
+                      ois = new ClassLoaderObjectInputStream(play.api.Play.current.classloader, new ByteArrayInputStream(b))
                       val r  = ois.readObject()
                       Some(r)
                   case "string" =>
