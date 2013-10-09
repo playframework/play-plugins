@@ -10,6 +10,7 @@ import java.net.URI
 import biz.source_code.base64Coder._
 import org.apache.commons.lang3.builder._
 import org.apache.commons.pool.impl.GenericObjectPool
+import play.api.mvc.Result
 
 /**
  * provides a redis client and a CachePlugin implementation
@@ -101,23 +102,28 @@ class RedisPlugin(app: Application) extends CachePlugin {
      try {
        val baos = new ByteArrayOutputStream()
        var prefix = "oos"
-       if (value.getClass.isInstanceOf[Serializable]) {
+       if (value.isInstanceOf[Result]) {
+          oos = new ObjectOutputStream(baos)
+          oos.writeObject(RedisResult.wrapResult(value.asInstanceOf[Result]))
+          oos.flush()
+          prefix = "result"
+       } else if (value.isInstanceOf[Serializable]) {
           oos = new ObjectOutputStream(baos)
           oos.writeObject(value)
           oos.flush()
-       } else if (value.getClass.isInstanceOf[String]) {
+       } else if (value.isInstanceOf[String]) {
           dos = new DataOutputStream(baos)
           dos.writeUTF(value.asInstanceOf[String])
           prefix = "string"
-       } else if (value.getClass.isInstanceOf[Int]) {
+       } else if (value.isInstanceOf[Int]) {
           dos = new DataOutputStream(baos)
           dos.writeInt(value.asInstanceOf[Int])
           prefix = "int"
-       } else if (value.getClass.isInstanceOf[Long]) {
+       } else if (value.isInstanceOf[Long]) {
           dos = new DataOutputStream(baos)
           dos.writeLong(value.asInstanceOf[Long])
           prefix = "long"
-       } else if (value.getClass.isInstanceOf[Boolean]) {
+       } else if (value.isInstanceOf[Boolean]) {
           dos = new DataOutputStream(baos)
           dos.writeBoolean(value.asInstanceOf[Boolean])
           prefix = "boolean"
@@ -141,6 +147,12 @@ class RedisPlugin(app: Application) extends CachePlugin {
     }
     def remove(key: String): Unit =  sedisPool.withJedisClient { client => client.del(key) }
 
+    class ClassLoaderObjectInputStream(stream:InputStream) extends ObjectInputStream(stream) {
+      override protected def resolveClass(desc: ObjectStreamClass) = {
+        Class.forName(desc.getName(), false, play.api.Play.current.classloader)
+      }
+    }
+
     def get(key: String): Option[Any] = {
       Logger.trace(s"Reading key ${key}")
       
@@ -155,8 +167,12 @@ class RedisPlugin(app: Application) extends CachePlugin {
                 val data: Seq[String] =  rawData.split("-")
                 val b = Base64Coder.decode(data.last)
                 data.head match {
+                  case "result" =>
+                      ois = new ClassLoaderObjectInputStream(new ByteArrayInputStream(b))
+                      val r  = ois.readObject()
+                      Some(RedisResult.unwrapResult(r.asInstanceOf[RedisResult]))
                   case "oos" =>
-                      ois = new ObjectInputStream(new ByteArrayInputStream(b))
+                      ois = new ClassLoaderObjectInputStream(new ByteArrayInputStream(b))
                       val r  = ois.readObject()
                       Some(r)
                   case "string" =>
