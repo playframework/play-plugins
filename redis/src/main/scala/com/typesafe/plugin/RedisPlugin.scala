@@ -10,16 +10,6 @@ import java.net.URI
 import biz.source_code.base64Coder._
 import org.apache.commons.lang3.builder._
 import org.apache.commons.pool.impl.GenericObjectPool
-import org.apache.commons.io.input.ClassLoaderObjectInputStream
-import play.api.libs.iteratee._
-import play.api.libs.concurrent._
-import play.api.mvc._
-import scala.concurrent.{ Await, Future }
-import scala.concurrent.ExecutionContext.Implicits.global
-
-case class CachedResult(status: Int,
-                        headers: Map[String, String],
-                        body: Array[Byte]) extends Serializable
 
 /**
  * provides a redis client and a CachePlugin implementation
@@ -98,45 +88,6 @@ class RedisPlugin(app: Application) extends CachePlugin {
     !app.configuration.getString("redisplugin").filter(_ == "disabled").isDefined
   }
 
-  /**
-   * Extracts the content as bytes.
-   */
-  def contentAsBytes(of: Result): Array[Byte] = of match {
-    case r @ SimpleResult(_, bodyEnumerator) => {
-      var readAsBytes = Enumeratee.map[r.BODY_CONTENT](r.writeable.transform(_)).transform(Iteratee.consume[Array[Byte]]())
-      bodyEnumerator(readAsBytes).flatMap(_.run).value1.get
-    }
-    case p:PlainResult => Array[Byte]()
-    case AsyncResult(p) => contentAsBytes(p.await.get)
-  }
-
-  /**
-   * Extracts the Status code of this Result value.
-   */
-  def status(of: Result): Int = of match {
-    case PlainResult(status, _) => status
-    case AsyncResult(p) => status(p.await.get)
-  }
-
-  /**
-   * Extracts all Headers of this Result value.
-   */
-  def headers(of: Result): Map[String, String] = of match {
-    case PlainResult(_, headers) => headers
-    case AsyncResult(p) => headers(p.await.get)
-  }
-
-  def wrapResult(result:Result):CachedResult = {
-    CachedResult(status(result),
-                 headers(result),
-                 contentAsBytes(result))
-  }
-
-  def unwrapResult(cachedResult:CachedResult) = {
-    SimpleResult(ResponseHeader(cachedResult.status, cachedResult.headers),
-                 Enumerator(cachedResult.body))
-  }
-
  /**
   * cacheAPI implementation
   * can serialize, deserialize to/from redis
@@ -152,8 +103,7 @@ class RedisPlugin(app: Application) extends CachePlugin {
        var prefix = "oos"
        if (value.isInstanceOf[Result]) {
           oos = new ObjectOutputStream(baos)
-          val wrappedResult = wrapResult(value.asInstanceOf[Result])
-          oos.writeObject(wrappedResult)
+          oos.writeObject(RedisResult.wrapResult(value.asInstanceOf[Result]))
           oos.flush()
           prefix = "result"
        } else if (value.isInstanceOf[Serializable]) {
@@ -196,6 +146,12 @@ class RedisPlugin(app: Application) extends CachePlugin {
     }
     def remove(key: String): Unit =  sedisPool.withJedisClient { client => client.del(key) }
 
+    class ClassLoaderObjectInputStream(stream:InputStream) extends ObjectInputStream(stream) {
+      override protected def resolveClass(desc: ObjectStreamClass) = {
+        Class.forName(desc.getName(), false, play.api.Play.current.classloader)
+      }
+    }
+
     def get(key: String): Option[Any] = {
       Logger.trace(s"Reading key ${key}")
       
@@ -211,11 +167,11 @@ class RedisPlugin(app: Application) extends CachePlugin {
                 val b = Base64Coder.decode(data.last)
                 data.head match {
                   case "result" =>
-                      ois = new ClassLoaderObjectInputStream(play.api.Play.current.classloader, new ByteArrayInputStream(b))
+                      ois = new ClassLoaderObjectInputStream(new ByteArrayInputStream(b))
                       val r  = ois.readObject()
-                      Some(unwrapResult(r.asInstanceOf[CachedResult]))
+                      Some(RedisResult.unwrapResult(r.asInstanceOf[RedisResult]))
                   case "oos" =>
-                      ois = new ClassLoaderObjectInputStream(play.api.Play.current.classloader, new ByteArrayInputStream(b))
+                      ois = new ClassLoaderObjectInputStream(new ByteArrayInputStream(b))
                       val r  = ois.readObject()
                       Some(r)
                   case "string" =>
