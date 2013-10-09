@@ -5,6 +5,7 @@ import play.api.libs.concurrent._
 import play.api.mvc._
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 case class RedisResult(status: Int,
                        headers: Map[String, String],
@@ -17,9 +18,8 @@ object RedisResult
    * From play/api/test/Helpers.scala
    */
   def contentAsBytes(of: Result): Array[Byte] = of match {
-    case r @ SimpleResult(_, bodyEnumerator) => {
-      var readAsBytes = Enumeratee.map[r.BODY_CONTENT](r.writeable.transform(_)).transform(Iteratee.consume[Array[Byte]]())
-      bodyEnumerator(readAsBytes).flatMap(_.run).value1.get
+    case r:SimpleResult => {
+      Await.result(r.body |>>> Iteratee.consume[Array[Byte]](), 1000 millis)
     }
     case p:PlainResult => Array[Byte]()
     case AsyncResult(p) => contentAsBytes(p.await.get)

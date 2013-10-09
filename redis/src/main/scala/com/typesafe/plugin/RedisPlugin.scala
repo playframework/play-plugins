@@ -10,6 +10,7 @@ import java.net.URI
 import biz.source_code.base64Coder._
 import org.apache.commons.lang3.builder._
 import org.apache.commons.pool.impl.GenericObjectPool
+import play.api.mvc.Result
 
 /**
  * provides a redis client and a CachePlugin implementation
