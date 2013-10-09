@@ -7,6 +7,7 @@ import scala.concurrent.{ Await, Future }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
+@SerialVersionUID(7122652360758747455L)
 case class RedisResult(status: Int,
                        headers: Map[String, String],
                        body: Array[Byte]) extends Serializable
