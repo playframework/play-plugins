@@ -10,7 +10,11 @@ import java.net.URI
 import biz.source_code.base64Coder._
 import org.apache.commons.lang3.builder._
 import org.apache.commons.pool.impl.GenericObjectPool
+import play.api.mvc.SimpleResult
 import play.api.mvc.Result
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.duration._
 
 /**
  * provides a redis client and a CachePlugin implementation
@@ -102,7 +106,15 @@ class RedisPlugin(app: Application) extends CachePlugin {
      try {
        val baos = new ByteArrayOutputStream()
        var prefix = "oos"
-       if (value.isInstanceOf[Result]) {
+       if (value.isInstanceOf[play.api.libs.iteratee.Iteratee[Array[Byte],SimpleResult]]) {
+          val iteratee = value.asInstanceOf[play.api.libs.iteratee.Iteratee[Array[Byte],SimpleResult]]
+          val result = Await.result(iteratee.run, 1000 millis)
+          oos = new ObjectOutputStream(baos)
+          oos.writeObject(RedisResult.wrapResult(result))
+          oos.flush()
+          prefix = "result"
+       }
+       else if (value.isInstanceOf[Result]) {
           oos = new ObjectOutputStream(baos)
           oos.writeObject(RedisResult.wrapResult(value.asInstanceOf[Result]))
           oos.flush()
