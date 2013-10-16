@@ -11,10 +11,7 @@ import biz.source_code.base64Coder._
 import org.apache.commons.lang3.builder._
 import org.apache.commons.pool.impl.GenericObjectPool
 import play.api.mvc.SimpleResult
-import play.api.mvc.Result
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ Await, Future }
-import scala.concurrent.duration._
 
 /**
  * provides a redis client and a CachePlugin implementation
@@ -101,25 +98,22 @@ class RedisPlugin(app: Application) extends CachePlugin {
  lazy val api = new CacheAPI {
 
     def set(key: String, value: Any, expiration: Int) {
+      value match {
+        case simpleResult:SimpleResult =>
+          RedisResult.wrapResult(simpleResult).map {
+            redisResult => set_(key, redisResult, expiration, "result")
+          }
+        case _ => set_(key, value, expiration)
+      }
+    }      
+
+    def set_(key: String, value: Any, expiration: Int, defaultPrefix:String = "oos") {
      var oos: ObjectOutputStream = null
      var dos: DataOutputStream = null
      try {
        val baos = new ByteArrayOutputStream()
-       var prefix = "oos"
-       if (value.isInstanceOf[play.api.libs.iteratee.Iteratee[Array[Byte],SimpleResult]]) {
-          val iteratee = value.asInstanceOf[play.api.libs.iteratee.Iteratee[Array[Byte],SimpleResult]]
-          val result = Await.result(iteratee.run, 1000 millis)
-          oos = new ObjectOutputStream(baos)
-          oos.writeObject(RedisResult.wrapResult(result))
-          oos.flush()
-          prefix = "result"
-       }
-       else if (value.isInstanceOf[Result]) {
-          oos = new ObjectOutputStream(baos)
-          oos.writeObject(RedisResult.wrapResult(value.asInstanceOf[Result]))
-          oos.flush()
-          prefix = "result"
-       } else if (value.isInstanceOf[Serializable]) {
+       var prefix = defaultPrefix
+       if (value.isInstanceOf[Serializable]) {
           oos = new ObjectOutputStream(baos)
           oos.writeObject(value)
           oos.flush()
