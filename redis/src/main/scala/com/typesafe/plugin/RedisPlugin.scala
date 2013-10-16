@@ -101,19 +101,24 @@ class RedisPlugin(app: Application) extends CachePlugin {
       value match {
         case simpleResult:SimpleResult =>
           RedisResult.wrapResult(simpleResult).map {
-            redisResult => set_(key, redisResult, expiration, "result")
+            redisResult => set_(key, redisResult, expiration)
           }
         case _ => set_(key, value, expiration)
       }
     }      
 
-    def set_(key: String, value: Any, expiration: Int, defaultPrefix:String = "oos") {
+    def set_(key: String, value: Any, expiration: Int) {
      var oos: ObjectOutputStream = null
      var dos: DataOutputStream = null
      try {
        val baos = new ByteArrayOutputStream()
-       var prefix = defaultPrefix
-       if (value.isInstanceOf[Serializable]) {
+       var prefix = "oos"
+       if (value.isInstanceOf[RedisResult]) {
+          oos = new ObjectOutputStream(baos)
+          oos.writeObject(value)
+          oos.flush()
+          prefix = "result"
+       } else if (value.isInstanceOf[Serializable]) {
           oos = new ObjectOutputStream(baos)
           oos.writeObject(value)
           oos.flush()
