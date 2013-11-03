@@ -3,10 +3,10 @@
 # ~~~~
 
 # frame page
-GET     /                           controllers.Application.frame()
+GET     /                           controllers.Application.index
 
 # JSON data
-GET     /data                       controllers.Application.data()
+GET     /data                       controllers.Application.data
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
