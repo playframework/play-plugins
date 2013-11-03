@@ -11,7 +11,7 @@ import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 
 import sbt._
-import PlayProject._
+import play.Project._
 
 trait DustTasks extends DustKeys {
 
@@ -32,7 +32,7 @@ trait DustTasks extends DustKeys {
 
     ctx.evaluateReader(
       scope,
-      new InputStreamReader(this.getClass.getClassLoader.getResource("dust-full-0.6.0.js").openConnection().getInputStream()),
+      new InputStreamReader(this.getClass.getClassLoader.getResource("dust-full-2.1.0.js").openConnection().getInputStream()),
       "dust.js",
       1, null)
 
@@ -45,10 +45,10 @@ trait DustTasks extends DustKeys {
       case e: JavaScriptException => {
         val jsError = e.getValue.asInstanceOf[Scriptable]
         val message = ScriptableObject.getProperty(jsError, "message").toString
-        
+
         // dust.js has weird error reporting where the line/column are part of the message, so we have to use a Regex to find them
         val DustCompileError = ".* At line : (\\d+), column : (\\d+)".r
-        
+
         message match {
           case DustCompileError(line, column) => Left(message, line.toInt, column.toInt)
           case _ => Left(message, 0, 0) // Some other weird error, we have no line/column info now.
@@ -87,8 +87,8 @@ trait DustTasks extends DustKeys {
             val msg = compile(templateName(sourceFile.getPath, assetsDir.getPath), IO.read(sourceFile)).left.map {
               case (msg, line, column) => throw AssetCompilationException(Some(sourceFile),
                 msg,
-                line,
-                column)
+                Some(line),
+                Some(column))
             }.right.get
 
             val out = new File(resources, "public/" + naming(name))
