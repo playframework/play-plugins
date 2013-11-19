@@ -1,12 +1,12 @@
 # Dust Plugin
 
+An updated version of this plugin can be found here: [https://github.com/jmparsons/play-dustjs](https://github.com/jmparsons/play-dustjs).
+
 This plugin provides build time compilation for [Dust](https://github.com/akdubya/dustjs) templates.
-
-
 
 # How to install
 
-* add 
+* add
 
 play 2.0.2:
 
@@ -14,13 +14,13 @@ play 2.0.2:
 
 play 2.0.1:
 
-```addSbtPlugin("com.typesafe" % "play-plugins-dust" % "1.0-SNAPSHOT")``` 
+```addSbtPlugin("com.typesafe" % "play-plugins-dust" % "1.0-SNAPSHOT")```
 
 to your plugin.sbt
 
 # How to Use
 
-* Include dust. Note that this is not provided by the sbt plugin. It can be found here: [dust-core-0.6.0.min.js](https://raw.github.com/typesafehub/play-plugins/master/dust/sample/public/javascripts/dust-core-0.6.0.min.js) 
+* Include dust. Note that this is not provided by the sbt plugin. It can be found here: [dust-core-0.6.0.min.js](https://raw.github.com/typesafehub/play-plugins/master/dust/sample/public/javascripts/dust-core-0.6.0.min.js)
 ```<script src="@routes.Assets.at("javascripts/dust-core-0.6.0.min.js")"></script>
 ```
 
@@ -29,7 +29,7 @@ to your plugin.sbt
 * Reference the generated .js in a  ```<script>``` tag:
 ```<script src="@routes.Assets.at("example.tl.js")"></script>```
 
-* Render the template when you receive the json 
+* Render the template when you receive the json
 ```
   $(function() {
 	$.get('@routes.Application.data', function(data) {
