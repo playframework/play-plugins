@@ -34,8 +34,9 @@ smtp.password (optional)
 import com.typesafe.plugin.*;
 MailerAPI mail = play.Play.application().plugin(MailerPlugin.class).email();
 mail.setSubject("mailer");
-mail.setRecipient("Peter Hausel Junior <noreply@email.com>","example@foo.com");
-mail.setFrom("Peter Hausel <noreply@email.com>");
+mail.addRecipient("Peter Hausel Junior <noreply@email.com>");
+mail.addRecipient("example@foo.com");
+mail.addFrom("Peter Hausel <noreply@email.com>");
 //sends html
 mail.sendHtml("<html>html</html>" );
 //sends text/text
@@ -50,10 +51,11 @@ mail.send( "text", "<html>html</html>");
 import com.typesafe.plugin._
 val mail = use[MailerPlugin].email
 mail.setSubject("mailer")
-mail.setRecipient("Peter Hausel Junior <noreply@email.com>","example@foo.com")
+mail.addRecipient("Peter Hausel Junior <noreply@email.com>");
+mail.addRecipient("example@foo.com");
 //or use a list
-mail.setBcc(List("Dummy <example@example.org>", "Dummy2 <example@example.org>"):_*)
-mail.setFrom("Peter Hausel <noreply@email.com>")
+mail.addBcc(List("Dummy <example@example.org>", "Dummy2 <example@example.org>"):_*)
+mail.addFrom("Peter Hausel <noreply@email.com>")
 //sends html
 mail.sendHtml("<html>html</html>" )
 //sends text/text
