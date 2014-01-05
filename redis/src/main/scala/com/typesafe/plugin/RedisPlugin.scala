@@ -40,7 +40,7 @@ class RedisPlugin(app: Application) extends CachePlugin {
                                  .getOrElse(false)
 
  private lazy val sentinelHosts : java.util.List[String] = app.configuration.getStringList("redis.sentinel.hosts")
-                                                           .getOrElse(seqAsJavaList(List("localhost:6379")))
+                                                           .getOrElse(seqAsJavaList(List("localhost:26379")))
 
  private lazy val masterName = app.configuration.getString("redis.master.name")
                                .getOrElse("mymaster")
