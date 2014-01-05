@@ -7,7 +7,7 @@ object ApplicationBuild extends Build {
     val appVersion      = "1.0-SNAPSHOT"
 
     val appDependencies = Seq(
-       "com.typesafe" %% "play-plugins-redis" % "2.2.0",
+       "com.typesafe" %% "play-plugins-redis" % "2.2.1-SNAPSHOT",
        "com.typesafe.play" %% "play-cache" % "2.2.0"
     )
 

@@ -45,6 +45,9 @@ class RedisPlugin(app: Application) extends CachePlugin {
  private lazy val masterName = app.configuration.getString("redis.master.name")
                                .getOrElse("mymaster")
 
+ private lazy val keyPrefix = app.configuration.getString("redis.key.prefix")
+                              .getOrElse("")
+
  /**
   * provides access to the underlying jedis Pool
   */
@@ -172,16 +175,20 @@ class RedisPlugin(app: Application) extends CachePlugin {
 
     }
 
+    private def getFullKey(key: String): String = {
+      if (keyPrefix.length > 0) keyPrefix + ":" + key else key
+    }
+
     private def setValue(client: Jedis, key: String, value: String, expiration: Int) {
-      client.set(key, value)
-      if (expiration != 0) client.expire(key, expiration)
+      client.set(getFullKey(key), value)
+      if (expiration != 0) client.expire(getFullKey(key), expiration)
     }
 
     def remove(key: String): Unit = {
       if (sentinelMode) {
-        sedisSentinelPool.withJedisClient { client => client.del(key) }
+        sedisSentinelPool.withJedisClient { client => client.del(getFullKey(key)) }
       } else {
-        sedisPool.withJedisClient { client => client.del(key) }
+        sedisPool.withJedisClient { client => client.del(getFullKey(key)) }
       }
     }
 
@@ -199,9 +206,9 @@ class RedisPlugin(app: Application) extends CachePlugin {
       try {
         val rawData = {
           if (sentinelMode) {
-            sedisSentinelPool.withJedisClient { client => client.get(key) }
+            sedisSentinelPool.withJedisClient { client => client.get(getFullKey(key)) }
           } else {
-            sedisPool.withJedisClient { client => client.get(key) }
+            sedisPool.withJedisClient { client => client.get(getFullKey(key)) }
           }
         }
         rawData match {

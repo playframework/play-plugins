@@ -9,11 +9,12 @@ object MinimalBuild extends Build {
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val repo = if (buildVersion.endsWith("SNAPSHOT")) typesafeSnapshot else typesafe  
   lazy val pk11 = "pk11 repo" at "http://pk11-scratch.googlecode.com/svn/trunk"
-  // for sedis 1.1.9 which hasn't been merged to master and doesn't exist in any repo yet
+  // for sedis 1.1.9 which hasn't been merged to master and doesn't exist in any public repo yet
   lazy val mavenLocal = "Maven Local" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
   lazy val root = Project(id = "play-plugins-redis", base = file("."), settings = Project.defaultSettings).settings(
-    version := "2.2.1",
+    version := "2.2.1-SNAPSHOT",
     scalaVersion := "2.10.2",
+    //publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath+"/.m2/repository"))),
     publishTo <<= (version) { version: String =>
                 val nexus = "https://private-repo.typesafe.com/typesafe/"
                 if (version.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "maven-snapshots/") 
