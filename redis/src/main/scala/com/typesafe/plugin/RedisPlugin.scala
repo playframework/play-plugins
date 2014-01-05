@@ -48,29 +48,34 @@ class RedisPlugin(app: Application) extends CachePlugin {
  /**
   * provides access to the underlying jedis Pool
   */
- lazy val jedisPool : Either[JedisPool, JedisSentinelPool] = {
+ lazy val jedisPool = {
    val poolConfig = createPoolConfig(app)
-
-   if (sentinelMode) {
-     Logger.info(s"Redis Plugin enabled. Connecting to Redis sentinels ${sentinelHosts} with timeout ${timeout}.")
-     Logger.info("Redis Plugin pool configuration: " + new ReflectionToStringBuilder(poolConfig).toString())
-     val sentinelSet = new java.util.HashSet[String]()
-     sentinelSet.addAll(sentinelHosts)
-     Right(new JedisSentinelPool(masterName, sentinelSet, poolConfig, timeout, password))
-   } else {
-     Logger.info(s"Redis Plugin enabled. Connecting to Redis on ${host}:${port} with timeout ${timeout}.")
-     Logger.info("Redis Plugin pool configuration: " + new ReflectionToStringBuilder(poolConfig).toString())
-     Left(new JedisPool(poolConfig, host, port, timeout, password))
-   }
+   Logger.info(s"Redis Plugin enabled. Connecting to Redis on ${host}:${port} with timeout ${timeout}.")
+   Logger.info("Redis Plugin pool configuration: " + new ReflectionToStringBuilder(poolConfig).toString())
+   new JedisPool(poolConfig, host, port, timeout, password)
  }
 
   /**
   * provides access to the sedis Pool
   */
- lazy val sedisPool : Either[Pool, SentinelPool] = jedisPool match {
-   case Left(pool) => Left(new Pool(pool))
-   case Right(pool) => Right(new SentinelPool(pool))
+ lazy val sedisPool = new Pool(jedisPool)
+
+ /**
+  * provides access to the underlying jedis sentinel Pool
+  */
+ lazy val jedisSentinelPool = {
+   val poolConfig = createPoolConfig(app)
+   Logger.info(s"Redis Plugin enabled. Connecting to Redis sentinels ${sentinelHosts} with timeout ${timeout}.")
+   Logger.info("Redis Plugin pool configuration: " + new ReflectionToStringBuilder(poolConfig).toString())
+   val sentinelSet = new java.util.HashSet[String]()
+   sentinelSet.addAll(sentinelHosts)
+   new JedisSentinelPool(masterName, sentinelSet, poolConfig, timeout, password)
  }
+
+ /**
+  * provides access to the sedis sentinel Pool
+  */
+ lazy val sedisSentinelPool = new SentinelPool(jedisSentinelPool)
 
  private def createPoolConfig(app: Application) : JedisPoolConfig = {
    val poolConfig : JedisPoolConfig = new JedisPoolConfig()
@@ -90,13 +95,18 @@ class RedisPlugin(app: Application) extends CachePlugin {
  }
 
  override def onStart() {
-    sedisPool
+   if (sentinelMode) {
+     sedisSentinelPool
+   } else {
+     sedisPool
+   }
  }
 
  override def onStop() {
-   jedisPool match {
-     case Left(pool) => pool.destroy()
-     case Right(pool) => pool.destroy()
+   if (sentinelMode) {
+     jedisSentinelPool.destroy()
+   } else {
+     jedisPool.destroy()
    }
  }
 
@@ -148,9 +158,10 @@ class RedisPlugin(app: Application) extends CachePlugin {
        val redisV = prefix + "-" + new String( Base64Coder.encode( baos.toByteArray() ) )
        Logger.trace(s"Setting key ${key} to ${redisV}")
 
-       sedisPool match {
-         case Left(pool) => pool.withJedisClient { client => setValue(client, key, redisV, expiration) }
-         case Right(pool) => pool.withJedisClient { client => setValue(client, key, redisV, expiration) }
+       if (sentinelMode) {
+         sedisSentinelPool.withJedisClient { client => setValue(client, key, redisV, expiration) }
+       } else {
+         sedisPool.withJedisClient { client => setValue(client, key, redisV, expiration) }
        }
      } catch {case ex: IOException =>
        Logger.warn("could not serialize key:"+ key + " and value:"+ value.toString + " ex:"+ex.toString)
@@ -167,9 +178,10 @@ class RedisPlugin(app: Application) extends CachePlugin {
     }
 
     def remove(key: String): Unit = {
-      sedisPool match {
-        case Left(pool) => pool.withJedisClient { client => client.del(key) }
-        case Right(pool) => pool.withJedisClient { client => client.del(key) }
+      if (sentinelMode) {
+        sedisSentinelPool.withJedisClient { client => client.del(key) }
+      } else {
+        sedisPool.withJedisClient { client => client.del(key) }
       }
     }
 
@@ -185,9 +197,12 @@ class RedisPlugin(app: Application) extends CachePlugin {
       var ois: ObjectInputStream = null
       var dis: DataInputStream = null
       try {
-        val rawData = sedisPool match {
-          case Left(pool) => pool.withJedisClient { client => client.get(key) }
-          case Right(pool) => pool.withJedisClient { client => client.get(key) }
+        val rawData = {
+          if (sentinelMode) {
+            sedisSentinelPool.withJedisClient { client => client.get(key) }
+          } else {
+            sedisPool.withJedisClient { client => client.get(key) }
+          }
         }
         rawData match {
             case null =>
