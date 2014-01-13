@@ -125,6 +125,11 @@ class RedisPlugin(app: Application) extends CachePlugin {
  lazy val api = new CacheAPI {
 
     def set(key: String, value: Any, expiration: Int) {
+     if (value == null) {
+       Logger.warn("not setting key:"+ key + " because value is null")
+       return
+     }
+
      var oos: ObjectOutputStream = null
      var dos: DataOutputStream = null
      try {
