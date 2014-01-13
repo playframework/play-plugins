@@ -10,6 +10,8 @@ public class Global extends GlobalSettings {
     
     public void onStart(Application app) {
       JedisPool p = app.plugin(RedisPlugin.class).jedisPool();
+      // uncomment to test sentinel setup
+      //JedisSentinelPool p = app.plugin(RedisPlugin.class).jedisSentinelPool();
       Jedis j = p.getResource();
       j.set("foo","yay");
       p.returnResource(j);

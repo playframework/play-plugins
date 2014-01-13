@@ -4,13 +4,12 @@ import play.api._
 import org.sedis._
 import redis.clients.jedis._
 import play.api.cache._
-import java.util._
 import java.io._
 import java.net.URI
 import biz.source_code.base64Coder._
 import org.apache.commons.lang3.builder._
-import org.apache.commons.pool.impl.GenericObjectPool
 import play.api.mvc.Result
+import scala.collection.JavaConversions._
 
 /**
  * provides a redis client and a CachePlugin implementation
@@ -37,6 +36,17 @@ class RedisPlugin(app: Application) extends CachePlugin {
  private lazy val timeout = app.configuration.getInt("redis.timeout")
                             .getOrElse(2000)
 
+ private lazy val sentinelMode = app.configuration.getBoolean("redis.sentinel.mode")
+                                 .getOrElse(false)
+
+ private lazy val sentinelHosts : java.util.List[String] = app.configuration.getStringList("redis.sentinel.hosts")
+                                                           .getOrElse(seqAsJavaList(List("localhost:26379")))
+
+ private lazy val masterName = app.configuration.getString("redis.master.name")
+                               .getOrElse("mymaster")
+
+ private lazy val keyPrefix = app.configuration.getString("redis.key.prefix")
+                              .getOrElse("")
 
  /**
   * provides access to the underlying jedis Pool
@@ -53,36 +63,54 @@ class RedisPlugin(app: Application) extends CachePlugin {
   */
  lazy val sedisPool = new Pool(jedisPool)
 
+ /**
+  * provides access to the underlying jedis sentinel Pool
+  */
+ lazy val jedisSentinelPool = {
+   val poolConfig = createPoolConfig(app)
+   Logger.info(s"Redis Plugin enabled. Connecting to Redis sentinels ${sentinelHosts} with timeout ${timeout}.")
+   Logger.info("Redis Plugin pool configuration: " + new ReflectionToStringBuilder(poolConfig).toString())
+   val sentinelSet = new java.util.HashSet[String]()
+   sentinelSet.addAll(sentinelHosts)
+   new JedisSentinelPool(masterName, sentinelSet, poolConfig, timeout, password)
+ }
+
+ /**
+  * provides access to the sedis sentinel Pool
+  */
+ lazy val sedisSentinelPool = new SentinelPool(jedisSentinelPool)
+
  private def createPoolConfig(app: Application) : JedisPoolConfig = {
    val poolConfig : JedisPoolConfig = new JedisPoolConfig()
-   app.configuration.getInt("redis.pool.maxIdle").map { poolConfig.maxIdle = _ }
-   app.configuration.getInt("redis.pool.minIdle").map { poolConfig.minIdle = _ }
-   app.configuration.getInt("redis.pool.maxActive").map { poolConfig.maxActive = _ }
-   app.configuration.getInt("redis.pool.maxWait").map { poolConfig.maxWait = _ }
-   app.configuration.getBoolean("redis.pool.testOnBorrow").map { poolConfig.testOnBorrow = _ }
-   app.configuration.getBoolean("redis.pool.testOnReturn").map { poolConfig.testOnReturn = _ }
-   app.configuration.getBoolean("redis.pool.testWhileIdle").map { poolConfig.testWhileIdle = _ }
-   app.configuration.getLong("redis.pool.timeBetweenEvictionRunsMillis").map { poolConfig.timeBetweenEvictionRunsMillis = _ }
-   app.configuration.getInt("redis.pool.numTestsPerEvictionRun").map { poolConfig.numTestsPerEvictionRun = _ }
-   app.configuration.getLong("redis.pool.minEvictableIdleTimeMillis").map { poolConfig.minEvictableIdleTimeMillis = _ }
-   app.configuration.getLong("redis.pool.softMinEvictableIdleTimeMillis").map { poolConfig.softMinEvictableIdleTimeMillis = _ }
-   app.configuration.getBoolean("redis.pool.lifo").map { poolConfig.lifo = _ }
-    app.configuration.getString("redis.pool.whenExhaustedAction").map { setting =>
-      poolConfig.whenExhaustedAction = setting match {
-        case "fail"  | "0" => GenericObjectPool.WHEN_EXHAUSTED_FAIL
-        case "block" | "1" => GenericObjectPool.WHEN_EXHAUSTED_BLOCK
-        case "grow"  | "2" => GenericObjectPool.WHEN_EXHAUSTED_FAIL
-      }
-    }
+   app.configuration.getInt("redis.pool.maxIdle").map { poolConfig.setMaxIdle(_) }
+   app.configuration.getInt("redis.pool.minIdle").map { poolConfig.setMinIdle(_) }
+   app.configuration.getInt("redis.pool.maxTotal").map { poolConfig.setMaxTotal(_) }
+   app.configuration.getBoolean("redis.pool.testOnBorrow").map { poolConfig.setTestOnBorrow(_) }
+   app.configuration.getBoolean("redis.pool.testOnReturn").map { poolConfig.setTestOnReturn(_) }
+   app.configuration.getBoolean("redis.pool.testWhileIdle").map { poolConfig.setTestWhileIdle(_) }
+   app.configuration.getLong("redis.pool.timeBetweenEvictionRunsMillis").map { poolConfig.setTimeBetweenEvictionRunsMillis(_) }
+   app.configuration.getInt("redis.pool.numTestsPerEvictionRun").map { poolConfig.setNumTestsPerEvictionRun(_) }
+   app.configuration.getLong("redis.pool.minEvictableIdleTimeMillis").map { poolConfig.setMinEvictableIdleTimeMillis(_) }
+   app.configuration.getLong("redis.pool.softMinEvictableIdleTimeMillis").map { poolConfig.setSoftMinEvictableIdleTimeMillis(_) }
+   app.configuration.getBoolean("redis.pool.lifo").map { poolConfig.setLifo(_) }
+   app.configuration.getBoolean("redis.pool.blockWhenExhausted").map { poolConfig.setBlockWhenExhausted(_) }
    poolConfig
  }
 
  override def onStart() {
-    sedisPool
+   if (sentinelMode) {
+     sedisSentinelPool
+   } else {
+     sedisPool
+   }
  }
 
  override def onStop() {
-    jedisPool.destroy()
+   if (sentinelMode) {
+     jedisSentinelPool.destroy()
+   } else {
+     jedisPool.destroy()
+   }
  }
 
  override lazy val enabled = {
@@ -97,6 +125,11 @@ class RedisPlugin(app: Application) extends CachePlugin {
  lazy val api = new CacheAPI {
 
     def set(key: String, value: Any, expiration: Int) {
+     if (value == null) {
+       Logger.warn("not setting key:"+ key + " because value is null")
+       return
+     }
+
      var oos: ObjectOutputStream = null
      var dos: DataOutputStream = null
      try {
@@ -132,10 +165,11 @@ class RedisPlugin(app: Application) extends CachePlugin {
        }
        val redisV = prefix + "-" + new String( Base64Coder.encode( baos.toByteArray() ) )
        Logger.trace(s"Setting key ${key} to ${redisV}")
-       
-       sedisPool.withJedisClient { client =>
-          client.set(key,redisV)
-          if (expiration != 0) client.expire(key,expiration)
+
+       if (sentinelMode) {
+         sedisSentinelPool.withJedisClient { client => setValue(client, key, redisV, expiration) }
+       } else {
+         sedisPool.withJedisClient { client => setValue(client, key, redisV, expiration) }
        }
      } catch {case ex: IOException =>
        Logger.warn("could not serialize key:"+ key + " and value:"+ value.toString + " ex:"+ex.toString)
@@ -145,7 +179,23 @@ class RedisPlugin(app: Application) extends CachePlugin {
      }
 
     }
-    def remove(key: String): Unit =  sedisPool.withJedisClient { client => client.del(key) }
+
+    private def getFullKey(key: String): String = {
+      if (keyPrefix.length > 0) keyPrefix + ":" + key else key
+    }
+
+    private def setValue(client: Jedis, key: String, value: String, expiration: Int) {
+      client.set(getFullKey(key), value)
+      if (expiration != 0) client.expire(getFullKey(key), expiration)
+    }
+
+    def remove(key: String): Unit = {
+      if (sentinelMode) {
+        sedisSentinelPool.withJedisClient { client => client.del(getFullKey(key)) }
+      } else {
+        sedisPool.withJedisClient { client => client.del(getFullKey(key)) }
+      }
+    }
 
     class ClassLoaderObjectInputStream(stream:InputStream) extends ObjectInputStream(stream) {
       override protected def resolveClass(desc: ObjectStreamClass) = {
@@ -159,7 +209,13 @@ class RedisPlugin(app: Application) extends CachePlugin {
       var ois: ObjectInputStream = null
       var dis: DataInputStream = null
       try {
-        val rawData = sedisPool.withJedisClient { client => client.get(key) }
+        val rawData = {
+          if (sentinelMode) {
+            sedisSentinelPool.withJedisClient { client => client.get(getFullKey(key)) }
+          } else {
+            sedisPool.withJedisClient { client => client.get(getFullKey(key)) }
+          }
+        }
         rawData match {
             case null =>
                 None

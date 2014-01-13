@@ -13,6 +13,8 @@ public class Application extends Controller {
   
   public static Result index() {
     JedisPool p = Play.application().plugin(RedisPlugin.class).jedisPool();
+    // uncomment to test sentinel setup
+    //JedisSentinelPool p = Play.application().plugin(RedisPlugin.class).jedisSentinelPool();
     Jedis j = p.getResource();
     String r = j.get("foo") + " - foo2:" + j.get("foo2");
     p.returnResource(j);
