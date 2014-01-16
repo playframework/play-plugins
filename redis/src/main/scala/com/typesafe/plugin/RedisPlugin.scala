@@ -10,7 +10,8 @@ import java.net.URI
 import biz.source_code.base64Coder._
 import org.apache.commons.lang3.builder._
 import org.apache.commons.pool.impl.GenericObjectPool
-import play.api.mvc.Result
+import play.api.mvc.SimpleResult
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * provides a redis client and a CachePlugin implementation
@@ -97,14 +98,24 @@ class RedisPlugin(app: Application) extends CachePlugin {
  lazy val api = new CacheAPI {
 
     def set(key: String, value: Any, expiration: Int) {
+      value match {
+        case simpleResult:SimpleResult =>
+          RedisResult.wrapResult(simpleResult).map {
+            redisResult => set_(key, redisResult, expiration)
+          }
+        case _ => set_(key, value, expiration)
+      }
+    }      
+
+    def set_(key: String, value: Any, expiration: Int) {
      var oos: ObjectOutputStream = null
      var dos: DataOutputStream = null
      try {
        val baos = new ByteArrayOutputStream()
        var prefix = "oos"
-       if (value.isInstanceOf[Result]) {
+       if (value.isInstanceOf[RedisResult]) {
           oos = new ObjectOutputStream(baos)
-          oos.writeObject(RedisResult.wrapResult(value.asInstanceOf[Result]))
+          oos.writeObject(value)
           oos.flush()
           prefix = "result"
        } else if (value.isInstanceOf[Serializable]) {
