@@ -31,6 +31,8 @@ MailerAPI mail = play.Play.application().plugin(MailerPlugin.class).email();
 mail.setSubject("mailer");
 mail.setRecipient("Peter Hausel Junior <noreply@email.com>","example@foo.com");
 mail.setFrom("Peter Hausel <noreply@email.com>");
+//adds attachment
+mail.addAttachment("attachment.pdf", "/some/path/attachment.pdf");
 //sends html
 mail.sendHtml("<html>html</html>" );
 //sends text/text
