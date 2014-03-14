@@ -45,6 +45,13 @@ trait MailerAPI extends MailerApiJavaInterop {
    */
   def addHeader(key: String, value: String): MailerAPI
 
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param path
+   */
+  def addAttachment(name: String, path: String): MailerAPI
 
    /**
    * Sends a text email based on the provided data. 
@@ -187,6 +194,17 @@ trait MailerBuilder extends MailerAPI {
   }
 
   /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param path
+   */
+  def addAttachment(name: String, path: String): MailerAPI  = {
+    context.get += ("attachment-"+name->List(path))
+    this
+  }
+
+  /**
    * Sends a text email based on the provided data. 
    *
    * @param bodyText : pass a string or use a Play! text template to generate the template
@@ -238,6 +256,13 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
 						  val split = e.indexOf(":")
 						  email.addHeader(e.substring(0,split), e.substring(split+1))
 						})
+    e("attachment-") foreach (e => {
+      val split = e.indexOf(":")
+      val attachment: EmailAttachment = new EmailAttachment()
+      attachment.setName(e.substring(0,split))
+      attachment.setPath(e.substring(split+1))
+      email.attach(attachment)
+    })
     email.setHostName(smtpHost)
     email.setSmtpPort(smtpPort)
     email.setSSLOnConnect(smtpSsl)
@@ -316,6 +341,7 @@ case object MockMailer extends MailerBuilder {
     e("ccRecipients").foreach(cc => Logger.info("CC:" + cc))
     e("bccRecipients").foreach(bcc => Logger.info("BCC:" + bcc))
 	e("header-") foreach(header => Logger.info("HEADER:" + header))
+    e("attachment-") foreach(header => Logger.info("ATTACHMENT:" + header))
     if (bodyText != null && bodyText != "") {
 
       Logger.info("TEXT: " + bodyText)
