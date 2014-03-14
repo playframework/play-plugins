@@ -2,7 +2,7 @@ name := "play-plugins-mailer"
     
 organization := "com.typesafe.play.plugins"
 
-version := "2.3.0"
+version := "2.3.1"
 
 scalaVersion := "2.11.1"
 
@@ -11,9 +11,9 @@ crossScalaVersions := Seq("2.11.1", "2.10.4")
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play" % "2.3.0" % "provided",
+  "com.typesafe.play" %% "play" % "2.3.1" % "provided",
   "org.apache.commons" % "commons-email" % "1.3.3",
-  "com.typesafe.play.plugins" %% "play-plugins-util" % "2.3.0"
+  "com.typesafe.play.plugins" %% "play-plugins-util" % "2.3.1"
 )
 
 publishTo <<= (version) { version: String =>

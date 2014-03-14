@@ -12,7 +12,7 @@ small scala and java utilities that we are using across the board
 (requires play 2.3.x)
 
 * add 
-```"com.typesafe.play.plugins" % "play-plugins-util" % "2.3.0"``` to your dependencies
+```"com.typesafe.play.plugins" % "play-plugins-util" % "2.3.1"``` to your dependencies
 
 
 ## Licence
