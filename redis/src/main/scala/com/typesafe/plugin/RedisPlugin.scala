@@ -38,15 +38,18 @@ class RedisPlugin(app: Application) extends CachePlugin {
  private lazy val timeout = app.configuration.getInt("redis.timeout")
                             .getOrElse(2000)
 
+ private lazy val database = app.configuration.getInt("redis.database")
+                          	.getOrElse(0)
+
 
  /**
   * provides access to the underlying jedis Pool
   */
  lazy val jedisPool = {
    val poolConfig = createPoolConfig(app)
-   Logger.info(s"Redis Plugin enabled. Connecting to Redis on ${host}:${port} with timeout ${timeout}.")
+   Logger.info(s"Redis Plugin enabled. Connecting to Redis on ${host}:${port} to ${database} with timeout ${timeout}.")
    Logger.info("Redis Plugin pool configuration: " + new ReflectionToStringBuilder(poolConfig).toString())
-   new JedisPool(poolConfig, host, port, timeout, password)
+   new JedisPool(poolConfig, host, port, timeout, password, database)
  }
 
   /**

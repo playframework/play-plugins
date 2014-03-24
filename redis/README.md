@@ -20,7 +20,7 @@ val o = play.api.cache.Cache.getAs[String]("mykey")
 
 #### Configurable
 
-* Point to your Redis server using configuration settings  ```redis.host```, ```redis.port``` and ```redis.password``` (defaults: ```localhost```, ```6379``` and ```null``` )
+* Point to your Redis server using configuration settings  ```redis.host```, ```redis.port```,  ```redis.password``` and ```redis.database``` (defaults: ```localhost```, ```6379```, ```null``` and ```0```)
 * Alternatively, specify a URI-based configuration using ```redis.uri``` (for example: ```redis.uri="redis://user:password@localhost:6379"```).
 * Set the timeout in milliseconds using ```redis.timeout``` (default is 2000).
 * Configure any aspect of the connection pool. See [the documentation for commons-pool ```GenericObjectPool```](http://commons.apache.org/proper/commons-pool/apidocs/org/apache/commons/pool/impl/GenericObjectPool.html), the underlying pool implementation, for more information on each setting.
