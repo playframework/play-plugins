@@ -215,7 +215,7 @@ trait MailerBuilder extends MailerAPI {
  *  and also Justin Long's gist)
  */
 
-class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Boolean, smtpUser: Option[String], smtpPass: Option[String]) extends MailerBuilder {
+class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Boolean, smtpUser: Option[String], smtpPass: Option[String], debugMode: Boolean) extends MailerBuilder {
 
   /**
    * Sends an email based on the provided data. 
@@ -244,7 +244,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
     email.setSSL(smtpSsl)
     email.setTLS(smtpTls)
     for(u <- smtpUser; p <- smtpPass) yield email.setAuthenticator(new DefaultAuthenticator(u, p))
-    email.setDebug(false)
+    email.setDebug(debugMode)
     email.send
     context.get.clear()
   }
@@ -340,7 +340,8 @@ class CommonsMailerPlugin(app: play.api.Application) extends MailerPlugin {
     val smtpTls = app.configuration.getBoolean("smtp.tls").getOrElse(false)
     val smtpUser = app.configuration.getString("smtp.user")
     val smtpPassword = app.configuration.getString("smtp.password")
-    new CommonsMailer(smtpHost, smtpPort, smtpSsl, smtpTls, smtpUser, smtpPassword)
+    val debugMode = app.configuration.getBoolean("smtp.debug").getOrElse(false)
+    new CommonsMailer(smtpHost, smtpPort, smtpSsl, smtpTls, smtpUser, smtpPassword, debugMode)
   }
 
   override lazy val enabled = {
