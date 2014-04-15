@@ -10,7 +10,7 @@ object MinimalBuild extends Build {
   lazy val repo = if (buildVersion.endsWith("SNAPSHOT")) typesafeSnapshot else typesafe  
   lazy val pk11 = "pk11 repo" at "http://pk11-scratch.googlecode.com/svn/trunk"
   lazy val root = Project(id = "play-plugins-redis", base = file("."), settings = Project.defaultSettings).settings(
-    version := "2.2.2",
+    version := "2.2.1",
     scalaVersion := "2.10.2",
     publishTo <<= (version) { version: String =>
                 val nexus = "https://private-repo.typesafe.com/typesafe/"
