@@ -109,7 +109,7 @@ class RedisPlugin(app: Application) extends CachePlugin {
         case _ => set_(key, value, expiration)
       }
     }      
-
+    
     def set_(key: String, value: Any, expiration: Int) {
      var oos: ObjectOutputStream = null
      var dos: DataOutputStream = null
@@ -163,58 +163,47 @@ class RedisPlugin(app: Application) extends CachePlugin {
 
     class ClassLoaderObjectInputStream(stream:InputStream) extends ObjectInputStream(stream) {
       override protected def resolveClass(desc: ObjectStreamClass) = {
-        Class.forName(desc.getName(), false, play.api.Play.current.classloader)
+        Class.forName(desc.getName(), false, app.classloader)
       }
+    }
+
+    def withDataInputStream[T](bytes: Array[Byte])(f: DataInputStream => T): T = {
+      val dis = new DataInputStream(new ByteArrayInputStream(bytes))
+      try f(dis) finally dis.close()
+    }
+
+    def withObjectInputStream[T](bytes: Array[Byte])(f: ObjectInputStream => T): T = {
+      val ois = new ClassLoaderObjectInputStream(new ByteArrayInputStream(bytes))
+      try f(ois) finally ois.close()
     }
 
     def get(key: String): Option[Any] = {
       Logger.trace(s"Reading key ${key}")
       
-      var ois: ObjectInputStream = null
-      var dis: DataInputStream = null
       try {
         val rawData = sedisPool.withJedisClient { client => client.get(key) }
         rawData match {
-            case null =>
-                None
-            case _ =>
-                val data: Seq[String] =  rawData.split("-")
-                val b = Base64Coder.decode(data.last)
-                data.head match {
-                  case "result" =>
-                      ois = new ClassLoaderObjectInputStream(new ByteArrayInputStream(b))
-                      val r  = ois.readObject()
-                      Some(RedisResult.unwrapResult(r.asInstanceOf[RedisResult]))
-                  case "oos" =>
-                      ois = new ClassLoaderObjectInputStream(new ByteArrayInputStream(b))
-                      val r  = ois.readObject()
-                      Some(r)
-                  case "string" =>
-                      dis = new DataInputStream(new ByteArrayInputStream(b))
-                      val r  = dis.readUTF()
-                      Some(r)
-                  case "int" =>
-                      dis = new DataInputStream(new ByteArrayInputStream(b))
-                       val r  = dis.readInt
-                      Some(r)
-                  case "long" =>
-                      dis = new DataInputStream(new ByteArrayInputStream(b))
-                      val r  = dis.readLong
-                      Some(r)
-                  case "boolean" =>
-                      dis = new DataInputStream(new ByteArrayInputStream(b))
-                      val r  = dis.readBoolean
-                      Some(r)
-                  case _ => throw new IOException("can not recognize value")
-                }
+          case null =>
+            None
+          case _ =>
+            val data: Seq[String] =  rawData.split("-")
+            val bytes = Base64Coder.decode(data.last)
+            data.head match {
+              case "result" =>
+                Some(RedisResult.unwrapResult(withObjectInputStream(bytes)(_.readObject())
+                  .asInstanceOf[RedisResult]))
+              case "oos" => Some(withObjectInputStream(bytes)(_.readObject()))
+              case "string" => Some(withDataInputStream(bytes)(_.readUTF()))
+              case "int" => Some(withDataInputStream(bytes)(_.readInt()))
+              case "long" => Some(withDataInputStream(bytes)(_.readLong()))
+              case "boolean" => Some(withDataInputStream(bytes)(_.readBoolean()))
+              case _ => throw new IOException("can not recognize value")
+            }
         }
       } catch {case ex: Exception =>
         Logger.warn("could not deserialize key:"+ key+ " ex:"+ex.toString)
         ex.printStackTrace()
         None
-      } finally {
-       if (ois != null) ois.close()
-       if (dis != null) dis.close()
       }
     }
 
