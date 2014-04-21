@@ -2,7 +2,7 @@
 
 plugins for the Play framework
 
-## Licence
+## License
 
 This software is licensed under the Apache 2 license, quoted below.
 
