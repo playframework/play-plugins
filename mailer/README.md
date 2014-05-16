@@ -12,6 +12,10 @@ play 2.1.x:
 
 * add ```"com.typesafe" %% "play-plugins-mailer" % "2.1-RC2"``` to your dependencies (```project/Build.scala```)
 
+play 2.2.x:
+
+* add ```"com.typesafe" %% "play-plugins-mailer" % "2.2.0"``` to your dependencies (```project/Build.scala```)
+
 
 and then
 * add ```1500:com.typesafe.plugin.CommonsMailerPlugin``` to your ```conf/play.plugins```
