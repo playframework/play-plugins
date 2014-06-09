@@ -1,6 +1,8 @@
-# Play  Plugins
+# Unsupported Play Plugins
 
-plugins for the Play framework
+These plugins are not supported by Typesafe and no guarantee is made that they will be maintained or upgraded to new versions of Play in a timely manner.
+
+Use at your own risk.
 
 ## Licence
 
