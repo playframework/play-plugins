@@ -69,7 +69,7 @@ class StatsdFilter extends EssentialFilter {
         Statsd.increment(totalPrefix + "error")
       }
 
-      def recordStats(result: SimpleResult) = {
+      def recordStats(result: Result) = {
         val time = System.currentTimeMillis() - start
         Statsd.timing(key, time)
         Statsd.timing(totalPrefix + "time", time)

@@ -1,6 +1,7 @@
 package play.modules.statsd.api
 
 import play.Logger
+import scala.util.control.NonFatal
 
 /**
  * Trait defining the statsd interface. It defines the two stats calls in
@@ -144,7 +145,7 @@ trait StatsdClient {
     try {
       operation
     } catch {
-      case error => Logger.warn("Unhandled throwable sending stat.", error)
+      case NonFatal(error) => Logger.warn("Unhandled throwable sending stat.", error)
     }
   }
 }

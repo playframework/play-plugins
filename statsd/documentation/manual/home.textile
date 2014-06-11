@@ -1,12 +1,12 @@
 h1. statsd
 
-This is a simple **statsd** module for **Play! Framework 2**. It pulls in configuration from @conf/application.conf@ and provides a singleton object @Statsd@ with methods for **counter** and **timing** calls to **statsd**.  It provides both a Scala and Java interface.  Similar to the Play 2 convention, the Scala interface is called @play.modules.statsd.api.Statsd@, and the Java interface is @play.modules.statsd.Statsd@.  
+This is a simple **statsd** module for **Play Framework 2**. It pulls in configuration from @conf/application.conf@ and provides a singleton object @Statsd@ with methods for **counter** and **timing** calls to **statsd**.  It provides both a Scala and Java interface.  Similar to the Play 2 convention, the Scala interface is called @play.modules.statsd.api.Statsd@, and the Java interface is @play.modules.statsd.Statsd@.  
 
 h2. Getting started
 
-To install, add @"com.typesafe.play.plugins" %% "play-statsd" % "2.2.0"@ to your dependencies, for example:
+To install, add @"com.typesafe.play.plugins" %% "play-statsd" % "2.3.0"@ to your dependencies, for example:
 
-bc.. val appDendencies = Seq(@"com.typesafe.play.plugins" %% "play-statsd" % "2.2.0")
+bc.. val appDendencies = Seq(@"com.typesafe.play.plugins" %% "play-statsd" % "2.3.0")
 
 h2. Configuration
 
