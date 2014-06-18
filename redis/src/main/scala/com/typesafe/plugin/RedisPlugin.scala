@@ -10,7 +10,7 @@ import java.net.URI
 import biz.source_code.base64Coder._
 import org.apache.commons.lang3.builder._
 import org.apache.commons.pool.impl.GenericObjectPool
-import play.api.mvc.SimpleResult
+import play.api.mvc.Result
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
@@ -102,14 +102,14 @@ class RedisPlugin(app: Application) extends CachePlugin {
 
     def set(key: String, value: Any, expiration: Int) {
       value match {
-        case simpleResult:SimpleResult =>
-          RedisResult.wrapResult(simpleResult).map {
+        case result:Result =>
+          RedisResult.wrapResult(result).map {
             redisResult => set_(key, redisResult, expiration)
           }
         case _ => set_(key, value, expiration)
       }
-    }      
-    
+    }
+
     def set_(key: String, value: Any, expiration: Int) {
      var oos: ObjectOutputStream = null
      var dos: DataOutputStream = null
@@ -146,7 +146,7 @@ class RedisPlugin(app: Application) extends CachePlugin {
        }
        val redisV = prefix + "-" + new String( Base64Coder.encode( baos.toByteArray() ) )
        Logger.trace(s"Setting key ${key} to ${redisV}")
-       
+
        sedisPool.withJedisClient { client =>
           client.set(key,redisV)
           if (expiration != 0) client.expire(key,expiration)
@@ -179,7 +179,7 @@ class RedisPlugin(app: Application) extends CachePlugin {
 
     def get(key: String): Option[Any] = {
       Logger.trace(s"Reading key ${key}")
-      
+
       try {
         val rawData = sedisPool.withJedisClient { client => client.get(key) }
         rawData match {
