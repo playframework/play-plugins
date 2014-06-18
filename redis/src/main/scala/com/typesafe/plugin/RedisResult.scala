@@ -12,7 +12,7 @@ case class RedisResult(status: Int,
 
 object RedisResult
 {
-  def wrapResult(result:SimpleResult):Future[RedisResult] = {
+  def wrapResult(result:Result):Future[RedisResult] = {
     val contentAsBytesFuture = result.body |>>> Iteratee.consume[Array[Byte]]()
     contentAsBytesFuture.map {
       contentAsBytes =>
@@ -23,7 +23,7 @@ object RedisResult
   }
 
   def unwrapResult(cachedResult:RedisResult) = {
-    SimpleResult(ResponseHeader(cachedResult.status, cachedResult.headers),
+    Result(ResponseHeader(cachedResult.status, cachedResult.headers),
                  Enumerator(cachedResult.body))
   }
 }
