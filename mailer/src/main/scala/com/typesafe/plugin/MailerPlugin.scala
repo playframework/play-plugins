@@ -45,22 +45,6 @@ trait MailerAPI extends MailerApiJavaInterop {
    */
   def addHeader(key: String, value: String): MailerAPI
 
-  /**
-   * Adds attachment to this email message.
-   *
-   * @param name
-   * @param path
-   */
-  def addAttachment(name: String, path: String): MailerAPI
-
-  /**
-   * Adds an attachment to this email message
-   * @param attachment A byte array of the contents of the attachment
-   * @param name The name of the attachment, will also be used as the description
-   * @param mimetype THe mimetype of the attachment
-   */
-  def addAttachment(attachment: Array[Byte], name: Option[String], mimetype: String): MailerAPI
-
    /**
    * Sends a text email based on the provided data. 
    *
@@ -98,9 +82,9 @@ trait MailerBuilder extends MailerAPI {
     }
   }
 
-  protected val attachmentcontext = new ThreadLocal[collection.mutable.MutableList[(Array[Byte],Option[String], String)]] {
-    protected override def initialValue(): collection.mutable.MutableList[(Array[Byte],Option[String], String)] = {
-      collection.mutable.MutableList[(Array[Byte],Option[String], String)]()
+  protected val attachmentcontext = new ThreadLocal[collection.mutable.MutableList[(Option[Array[Byte]], Option[String], Option[String], String, Option[String], Option[String])]] {
+    protected override def initialValue() = {
+      collection.mutable.MutableList()
     }
   }
 
@@ -206,16 +190,41 @@ trait MailerBuilder extends MailerAPI {
     context.get += ("header-"+key->List(value))
     this
   }
+
   /**
    * Adds attachment to this email message.
    *
-   * @param attachment
    * @param name
+   * @param data
    * @param mimetype
    */
-  def addAttachment(attachment: Array[Byte], name: Option[String], mimetype: String): MailerAPI = {
-    attachmentcontext.get += ((attachment, name, mimetype))
-    this
+  def addAttachment(name: String, data: Array[Byte], mimetype: String): MailerAPI = {
+    addAttachment(name, data, mimetype, None, None)
+  }
+
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param data
+   * @param mimetype
+   * @param description
+   */
+  def addAttachment(name: String, data: Array[Byte], mimetype: String, description: String): MailerAPI = {
+    addAttachment(name, data, mimetype, description, null)
+  }
+
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param data
+   * @param mimetype
+   * @param description
+   * @param disposition
+   */
+  def addAttachment(name: String, data: Array[Byte], mimetype: String, description: String, disposition: String): MailerAPI = {
+    addAttachment(name, data, mimetype, if (description != null) Some(description) else None, if (disposition != null) Some(disposition) else None)
   }
 
   /**
@@ -224,8 +233,57 @@ trait MailerBuilder extends MailerAPI {
    * @param name
    * @param path
    */
-  def addAttachment(name: String, path: String): MailerAPI  = {
-    context.get += ("attachment-"+name->List(path))
+  def addAttachment(name: String, path: String): MailerAPI = {
+    addAttachment(name, path, null)
+  }
+
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param path
+   * @param description
+   */
+  def addAttachment(name: String, path: String, description: String): MailerAPI = {
+    addAttachment(name, path, description, null)
+  }
+
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param path
+   * @param description
+   * @param disposition
+   */
+  def addAttachment(name: String, path: String, description: String, disposition: String): MailerAPI = {
+    addAttachment(name, path, if (description != null) Some(description) else None, if (disposition != null) Some(disposition) else None)
+  }
+
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param data
+   * @param mimetype
+   * @param description
+   * @param disposition
+   */
+  private def addAttachment(name: String, data: Array[Byte], mimetype: String, description: Option[String], disposition: Option[String]): MailerAPI = {
+    attachmentcontext.get += ((Some(data), Some(mimetype), None, name, description, disposition))
+    this
+  }
+
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param path
+   * @param description
+   * @param disposition
+   */
+  private def addAttachment(name: String, path: String, description: Option[String], disposition: Option[String]): MailerAPI  = {
+    attachmentcontext.get += ((None, None, Some(path), name, description, disposition))
     this
   }
 
@@ -281,16 +339,26 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
 						  val split = e.indexOf(":")
 						  email.addHeader(e.substring(0,split), e.substring(split+1))
 						})
-    e("attachment-") foreach (e => {
-      val split = e.indexOf(":")
-      val attachment: EmailAttachment = new EmailAttachment()
-      attachment.setName(e.substring(0,split))
-      attachment.setPath(e.substring(split+1))
-      email.attach(attachment)
-    })
-    attachmentcontext.get.foreach { attachment =>
-      val datasource = new ByteArrayDataSource(attachment._1, attachment._3)
-      email.attach(datasource, attachment._2.getOrElse("Lucidchart"), attachment._2.getOrElse("Lucidchart"))
+    attachmentcontext.get.foreach { case (dataOpt, mimetypeOpt, pathOpt, name, descriptionOpt, dispositionOpt) =>
+      val description = descriptionOpt.getOrElse(name)
+      val disposition = dispositionOpt.getOrElse(EmailAttachment.ATTACHMENT)
+      for {
+        data <- dataOpt
+        mimetype <- mimetypeOpt
+      } yield {
+        val dataSource = new javax.mail.util.ByteArrayDataSource(data, mimetype)
+        email.attach(dataSource, name, description, disposition)
+      }
+      for {
+        path <- pathOpt
+      } yield {
+        val attachment = new EmailAttachment()
+        attachment.setName(name)
+        attachment.setPath(path)
+        attachment.setDescription(description)
+        attachment.setDisposition(disposition)
+        email.attach(attachment)
+      }
     }
     email.setHostName(smtpHost)
     email.setSmtpPort(smtpPort)
