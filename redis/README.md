@@ -70,8 +70,12 @@ pool.withJedisClient { client =>
 
 * add 
 
-play 2.0.x:
+play < 2.3.x:
 ```"com.typesafe" %% "play-plugins-redis" % "2.0.4"``` to your dependencies
+
+play = 2.3.x:
+```"com.typesafe.play.plugins" %% "play-plugins-redis" % "2.3.0"``` to your dependencies
+* Please note: only compatible with Scala 2.10 until sedis is recompiled with Scala 2.11
 
 * create a file called ```play.plugins``` in your ```app/conf``` directory
 

@@ -9,9 +9,9 @@ import java.io._
 import java.net.URI
 import biz.source_code.base64Coder._
 import org.apache.commons.lang3.builder._
-import org.apache.commons.pool.impl.GenericObjectPool
-import play.api.mvc.SimpleResult
+import play.api.mvc.Result
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.apache.commons.pool.impl.GenericObjectPool
 
 /**
  * provides a redis client and a CachePlugin implementation
@@ -102,8 +102,8 @@ class RedisPlugin(app: Application) extends CachePlugin {
 
     def set(key: String, value: Any, expiration: Int) {
       value match {
-        case simpleResult:SimpleResult =>
-          RedisResult.wrapResult(simpleResult).map {
+        case result:Result =>
+          RedisResult.wrapResult(result).map {
             redisResult => set_(key, redisResult, expiration)
           }
         case _ => set_(key, value, expiration)
