@@ -45,7 +45,7 @@ class RedisPlugin(app: Application) extends CachePlugin {
  /**
   * provides access to the underlying jedis Pool
   */
- lazy val jedisPool = {
+ def jedisPool = {
    val poolConfig = createPoolConfig(app)
    Logger.info(s"Redis Plugin enabled. Connecting to Redis on ${host}:${port} to ${database} with timeout ${timeout}.")
    Logger.info("Redis Plugin pool configuration: " + new ReflectionToStringBuilder(poolConfig).toString())
