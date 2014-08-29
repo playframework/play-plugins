@@ -4,6 +4,8 @@ These plugins are not supported by Typesafe and no guarantee is made that they w
 
 Use at your own risk.
 
+![Travis build status](https://travis-ci.org/typesafehub/play-plugins.svg?branch=master)
+
 ## Licence
 
 This software is licensed under the Apache 2 license, quoted below.
