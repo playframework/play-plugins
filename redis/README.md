@@ -23,11 +23,11 @@ val o = play.api.cache.Cache.getAs[String]("mykey")
 * Point to your Redis server using configuration settings  ```redis.host```, ```redis.port```,  ```redis.password``` and ```redis.database``` (defaults: ```localhost```, ```6379```, ```null``` and ```0```)
 * Alternatively, specify a URI-based configuration using ```redis.uri``` (for example: ```redis.uri="redis://user:password@localhost:6379"```).
 * Set the timeout in milliseconds using ```redis.timeout``` (default is 2000).
-* Configure any aspect of the connection pool. See [the documentation for commons-pool ```GenericObjectPool```](http://commons.apache.org/proper/commons-pool/apidocs/org/apache/commons/pool/impl/GenericObjectPool.html), the underlying pool implementation, for more information on each setting.
+* Configure any aspect of the connection pool. See [the documentation for commons-pool2 ```GenericObjectPoolConfig```](https://commons.apache.org/proper/commons-pool/apidocs/org/apache/commons/pool2/impl/GenericObjectPoolConfig.html), the underlying pool implementation, for more information on each setting.
     * redis.pool.maxIdle
     * redis.pool.minIdle
-    * redis.pool.maxActive
-    * redis.pool.maxWait
+    * redis.pool.maxTotal
+    * redis.pool.maxWaitMillis
     * redis.pool.testOnBorrow
     * redis.pool.testOnReturn
     * redis.pool.testWhileIdle
@@ -36,7 +36,7 @@ val o = play.api.cache.Cache.getAs[String]("mykey")
     * redis.pool.minEvictableIdleTimeMillis
     * redis.pool.softMinEvictableIdleTimeMillis
     * redis.pool.lifo
-    * redis.pool.whenExhaustedAction (valid options: "fail", "block" (default), "grow")
+    * redis.pool.blockWhenExhausted
 
 
 #### Allows direct access to Jedis and Sedis: 
@@ -75,7 +75,6 @@ play < 2.3.x:
 
 play = 2.3.x:
 ```"com.typesafe.play.plugins" %% "play-plugins-redis" % "2.3.0"``` to your dependencies
-* Please note: only compatible with Scala 2.10 until sedis is recompiled with Scala 2.11
 
 * create a file called ```play.plugins``` in your ```app/conf``` directory
 

@@ -11,7 +11,7 @@ import biz.source_code.base64Coder._
 import org.apache.commons.lang3.builder._
 import play.api.mvc.Result
 import scala.concurrent.ExecutionContext.Implicits.global
-import org.apache.commons.pool.impl.GenericObjectPool
+import org.apache.commons.pool2.impl.GenericObjectPool
 
 /**
  * provides a redis client and a CachePlugin implementation
@@ -59,25 +59,19 @@ class RedisPlugin(app: Application) extends CachePlugin {
 
  private def createPoolConfig(app: Application) : JedisPoolConfig = {
    val poolConfig : JedisPoolConfig = new JedisPoolConfig()
-   app.configuration.getInt("redis.pool.maxIdle").map { poolConfig.maxIdle = _ }
-   app.configuration.getInt("redis.pool.minIdle").map { poolConfig.minIdle = _ }
-   app.configuration.getInt("redis.pool.maxActive").map { poolConfig.maxActive = _ }
-   app.configuration.getInt("redis.pool.maxWait").map { poolConfig.maxWait = _ }
-   app.configuration.getBoolean("redis.pool.testOnBorrow").map { poolConfig.testOnBorrow = _ }
-   app.configuration.getBoolean("redis.pool.testOnReturn").map { poolConfig.testOnReturn = _ }
-   app.configuration.getBoolean("redis.pool.testWhileIdle").map { poolConfig.testWhileIdle = _ }
-   app.configuration.getLong("redis.pool.timeBetweenEvictionRunsMillis").map { poolConfig.timeBetweenEvictionRunsMillis = _ }
-   app.configuration.getInt("redis.pool.numTestsPerEvictionRun").map { poolConfig.numTestsPerEvictionRun = _ }
-   app.configuration.getLong("redis.pool.minEvictableIdleTimeMillis").map { poolConfig.minEvictableIdleTimeMillis = _ }
-   app.configuration.getLong("redis.pool.softMinEvictableIdleTimeMillis").map { poolConfig.softMinEvictableIdleTimeMillis = _ }
-   app.configuration.getBoolean("redis.pool.lifo").map { poolConfig.lifo = _ }
-    app.configuration.getString("redis.pool.whenExhaustedAction").map { setting =>
-      poolConfig.whenExhaustedAction = setting match {
-        case "fail"  | "0" => GenericObjectPool.WHEN_EXHAUSTED_FAIL
-        case "block" | "1" => GenericObjectPool.WHEN_EXHAUSTED_BLOCK
-        case "grow"  | "2" => GenericObjectPool.WHEN_EXHAUSTED_FAIL
-      }
-    }
+   app.configuration.getInt("redis.pool.maxIdle").map { poolConfig.setMaxIdle(_) }
+   app.configuration.getInt("redis.pool.minIdle").map { poolConfig.setMinIdle(_) }
+   app.configuration.getInt("redis.pool.maxTotal").map { poolConfig.setMaxTotal(_) }
+   app.configuration.getInt("redis.pool.maxWaitMillis").map { poolConfig.setMaxWaitMillis(_) }
+   app.configuration.getBoolean("redis.pool.testOnBorrow").map { poolConfig.setTestOnBorrow(_) }
+   app.configuration.getBoolean("redis.pool.testOnReturn").map { poolConfig.setTestOnReturn(_) }
+   app.configuration.getBoolean("redis.pool.testWhileIdle").map { poolConfig.setTestWhileIdle(_) }
+   app.configuration.getLong("redis.pool.timeBetweenEvictionRunsMillis").map { poolConfig.setTimeBetweenEvictionRunsMillis(_) }
+   app.configuration.getInt("redis.pool.numTestsPerEvictionRun").map { poolConfig.setNumTestsPerEvictionRun(_) }
+   app.configuration.getLong("redis.pool.minEvictableIdleTimeMillis").map { poolConfig.setMinEvictableIdleTimeMillis(_) }
+   app.configuration.getLong("redis.pool.softMinEvictableIdleTimeMillis").map { poolConfig.setSoftMinEvictableIdleTimeMillis(_) }
+   app.configuration.getBoolean("redis.pool.lifo").map { poolConfig.setLifo(_) }
+   app.configuration.getBoolean("redis.pool.blockWhenExhausted").map { poolConfig.setBlockWhenExhausted(_) }
    poolConfig
  }
 
