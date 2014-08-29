@@ -20,7 +20,10 @@ libraryDependencies ++= Seq(
   "org.sedis"                 %  "sedis_2.10.0"       % "1.1.1"
 )
 
-resolvers += "pk11 repo" at "http://pk11-scratch.googlecode.com/svn/trunk"
+resolvers ++= Seq(
+  "pk11 repo" at "http://pk11-scratch.googlecode.com/svn/trunk",
+  "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+)
 
 publishTo <<= (version) { version: String =>
   val nexus = "https://private-repo.typesafe.com/typesafe/"
