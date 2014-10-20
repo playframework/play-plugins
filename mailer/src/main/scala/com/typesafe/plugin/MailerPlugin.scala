@@ -242,6 +242,9 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
     email.setHostName(smtpHost)
     email.setSmtpPort(smtpPort)
     email.setSSLOnConnect(smtpSsl)
+    if (smtpSsl) {
+      email.setSslSmtpPort(smtpPort.toString());
+    }
     email.setStartTLSEnabled(smtpTls)
     for(u <- smtpUser; p <- smtpPass) yield email.setAuthenticator(new DefaultAuthenticator(u, p))
     email.setDebug(false)
