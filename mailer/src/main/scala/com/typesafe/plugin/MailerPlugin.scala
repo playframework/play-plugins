@@ -227,8 +227,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
    * @return
    */
   def send(bodyText: String, bodyHtml: String): Unit = {
-    val email = createEmailer(bodyText,bodyHtml)
-    email.setCharset(e("charset").headOption.getOrElse("utf-8"))
+    val email = createEmailer(bodyText,bodyHtml,e("charset").headOption.getOrElse("utf-8"))
     email.setSubject(e("subject").headOption.getOrElse(""))
     e("from").foreach(setAddress(_) { (address, name) => email.setFrom(address, name) })
     e("replyTo").foreach(setAddress(_) { (address, name) => email.addReplyTo(address, name) })
@@ -278,15 +277,23 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
    * @param bodyHtml
    * @return
    */
-  private def createEmailer(bodyText: String, bodyHtml: String): MultiPartEmail = {
+  private def createEmailer(bodyText: String, bodyHtml: String, charset: String): MultiPartEmail = {
     if (bodyHtml == null || bodyHtml == "") {
       val e = new MultiPartEmail()
+      e.setCharset(charset)
       e.setMsg(bodyText)
       e
-    } else if (bodyText == null || bodyText == "")
-        new HtmlEmail().setHtmlMsg(bodyHtml)
-      else
-        new HtmlEmail().setHtmlMsg(bodyHtml).setTextMsg(bodyText)
+    } else if (bodyText == null || bodyText == "") {
+        val e = new HtmlEmail()
+        e.setCharset(charset)
+        e.setHtmlMsg(bodyHtml)
+        e
+    } else {
+        val e = new HtmlEmail()
+        e.setCharset(charset)
+        e.setHtmlMsg(bodyHtml).setTextMsg(bodyText)
+        e
+    }
   }
 
 }
