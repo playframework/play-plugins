@@ -309,6 +309,7 @@ case object MockMailer extends MailerBuilder {
 
   def send(bodyText: String, bodyHtml: String): Unit = {
     Logger.info("MOCK MAILER: send email")
+    e("subject").foreach(subject => Logger.info("SUBJECT:" + subject))
     e("from").foreach(from => Logger.info("FROM:" + from))
     e("replyTo").foreach(replyTo => Logger.info("REPLYTO:" + replyTo))
     e("recipients").foreach(to => Logger.info("TO:" + to))
