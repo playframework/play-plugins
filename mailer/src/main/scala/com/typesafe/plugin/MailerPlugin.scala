@@ -3,13 +3,13 @@ package com.typesafe.plugin
 import org.apache.commons.mail._
 
 import java.util.concurrent.Future
-import java.lang.reflect._
 import javax.mail.internet.InternetAddress
 
 import scala.collection.JavaConversions._
 
 import play.api._
 import play.api.Configuration._
+import java.net.URL
 
 trait MailerAPI extends MailerApiJavaInterop {
 
@@ -45,6 +45,13 @@ trait MailerAPI extends MailerApiJavaInterop {
    */
   def addHeader(key: String, value: String): MailerAPI
 
+  /**
+   * Adds an attachment to this email message
+   * @param attachment A byte array of the contents of the attachment
+   * @param name The name of the attachment, will also be used as the description
+   * @param mimetype THe mimetype of the attachment
+   */
+  def addAttachment(attachment: Array[Byte], name: Option[String], mimetype: String): MailerAPI
 
    /**
    * Sends a text email based on the provided data. 
@@ -80,6 +87,12 @@ trait MailerBuilder extends MailerAPI {
   protected val context = new ThreadLocal[collection.mutable.Map[String,List[String]]] {
     protected override def initialValue(): collection.mutable.Map[String,List[String]] = {
       collection.mutable.Map[String,List[String]]()
+    }
+  }
+
+  protected val attachmentcontext = new ThreadLocal[collection.mutable.MutableList[(Array[Byte],Option[String], String)]] {
+    protected override def initialValue(): collection.mutable.MutableList[(Array[Byte],Option[String], String)] = {
+      collection.mutable.MutableList[(Array[Byte],Option[String], String)]()
     }
   }
 
@@ -186,6 +199,11 @@ trait MailerBuilder extends MailerAPI {
     this
   }
 
+  def addAttachment(attachment: Array[Byte], name: Option[String], mimetype: String): MailerAPI = {
+    attachmentcontext.get += ((attachment, name, mimetype))
+    this
+  }
+
   /**
    * Sends a text email based on the provided data. 
    *
@@ -238,6 +256,10 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
 						  val split = e.indexOf(":")
 						  email.addHeader(e.substring(0,split), e.substring(split+1))
 						})
+    attachmentcontext.get.foreach { attachment =>
+      val datasource = new ByteArrayDataSource(attachment._1, attachment._3)
+      email.attach(datasource, attachment._2.getOrElse("Lucidchart"), attachment._2.getOrElse("Lucidchart"))
+    }
     email.setHostName(smtpHost)
     email.setSmtpPort(smtpPort)
     email.setSSLOnConnect(smtpSsl)
@@ -249,6 +271,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
     email.setDebug(false)
     email.send
     context.get.clear()
+    attachmentcontext.get.clear()
   }
 
   /**
