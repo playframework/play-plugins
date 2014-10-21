@@ -20,6 +20,7 @@ smtp.ssl (defaults to no)
 smtp.tls (defaults to no)
 smtp.user (optional)
 smtp.password (optional)
+smtp.debug (defaults to no)
 ```
 
 
