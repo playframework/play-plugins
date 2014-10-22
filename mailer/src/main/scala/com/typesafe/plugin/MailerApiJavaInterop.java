@@ -1,5 +1,7 @@
 package com.typesafe.plugin;
 
+import java.io.File;
+
 public interface MailerApiJavaInterop {
 
   /**
@@ -66,26 +68,26 @@ public interface MailerApiJavaInterop {
    * Adds an attachment to this email message.
    *
    * @param name The name of the attachment, will also be used as the description (if not explicitly defined)
-   * @param path The path of the attachment
+   * @param file The file to add as an attachment
    */
-  public MailerAPI addAttachment(String name, String path);
+  public MailerAPI addAttachment(String name, File file);
 
   /**
    * Adds an attachment to this email message.
    *
    * @param name The name of the attachment, will also be used as the description (if not explicitly defined)
-   * @param path The path of the attachment
+   * @param file The file to add as an attachment
    * @param description The description of the attachment, by default the name of the attachment
    */
-  public MailerAPI addAttachment(String name, String path, String description);
+  public MailerAPI addAttachment(String name, File file, String description);
 
   /**
    * Adds an attachment to this email message.
    *
    * @param name The name of the attachment, will also be used as the description (if not explicitly defined)
-   * @param path The path of the attachment
+   * @param file The file to add as an attachment
    * @param description The description of the attachment, by default the name of the attachment
    * @param disposition The disposition of the attachment, by default {@code javax.mail.Part.ATTACHMENT}
    */
-  public MailerAPI addAttachment(String name, String path, String description, String disposition);
+  public MailerAPI addAttachment(String name, File file, String description, String disposition);
 }

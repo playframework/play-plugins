@@ -1,5 +1,7 @@
 package com.typesafe.plugin
 
+import java.io.File
+
 import org.apache.commons.mail._
 
 import java.util.concurrent.Future
@@ -82,7 +84,14 @@ trait MailerBuilder extends MailerAPI {
     }
   }
 
-  protected val attachmentcontext = new ThreadLocal[collection.mutable.MutableList[(Option[Array[Byte]], Option[String], Option[String], String, Option[String], Option[String])]] {
+  case class Attachment(data: Option[Array[Byte]],
+                        mimetype: Option[String],
+                        filePath: Option[String],
+                        name: String,
+                        description: Option[String],
+                        disposition: Option[String])
+
+  protected val attachmentContext = new ThreadLocal[collection.mutable.MutableList[Attachment]] {
     protected override def initialValue() = {
       collection.mutable.MutableList()
     }
@@ -231,33 +240,33 @@ trait MailerBuilder extends MailerAPI {
    * Adds attachment to this email message.
    *
    * @param name
-   * @param path
+   * @param file
    */
-  def addAttachment(name: String, path: String): MailerAPI = {
-    addAttachment(name, path, null)
+  def addAttachment(name: String, file: File): MailerAPI = {
+    addAttachment(name, file, null)
   }
 
   /**
    * Adds attachment to this email message.
    *
    * @param name
-   * @param path
+   * @param file
    * @param description
    */
-  def addAttachment(name: String, path: String, description: String): MailerAPI = {
-    addAttachment(name, path, description, null)
+  def addAttachment(name: String, file: File, description: String): MailerAPI = {
+    addAttachment(name, file, description, null)
   }
 
   /**
    * Adds attachment to this email message.
    *
    * @param name
-   * @param path
+   * @param file
    * @param description
    * @param disposition
    */
-  def addAttachment(name: String, path: String, description: String, disposition: String): MailerAPI = {
-    addAttachment(name, path, if (description != null) Some(description) else None, if (disposition != null) Some(disposition) else None)
+  def addAttachment(name: String, file: File, description: String, disposition: String): MailerAPI = {
+    addAttachment(name, file, if (description != null) Some(description) else None, if (disposition != null) Some(disposition) else None)
   }
 
   /**
@@ -270,7 +279,7 @@ trait MailerBuilder extends MailerAPI {
    * @param disposition
    */
   private def addAttachment(name: String, data: Array[Byte], mimetype: String, description: Option[String], disposition: Option[String]): MailerAPI = {
-    attachmentcontext.get += ((Some(data), Some(mimetype), None, name, description, disposition))
+    attachmentContext.get += Attachment(Some(data), Some(mimetype), None, name, description, disposition)
     this
   }
 
@@ -278,12 +287,12 @@ trait MailerBuilder extends MailerAPI {
    * Adds attachment to this email message.
    *
    * @param name
-   * @param path
+   * @param file
    * @param description
    * @param disposition
    */
-  private def addAttachment(name: String, path: String, description: Option[String], disposition: Option[String]): MailerAPI  = {
-    attachmentcontext.get += ((None, None, Some(path), name, description, disposition))
+  private def addAttachment(name: String, file: File, description: Option[String], disposition: Option[String]): MailerAPI  = {
+    attachmentContext.get += Attachment(None, None, Some(file.getPath), name, description, disposition)
     this
   }
 
@@ -339,25 +348,25 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
 						  val split = e.indexOf(":")
 						  email.addHeader(e.substring(0,split), e.substring(split+1))
 						})
-    attachmentcontext.get.foreach { case (dataOpt, mimetypeOpt, pathOpt, name, descriptionOpt, dispositionOpt) =>
-      val description = descriptionOpt.getOrElse(name)
-      val disposition = dispositionOpt.getOrElse(EmailAttachment.ATTACHMENT)
+    attachmentContext.get.foreach { case attachment =>
+      val description = attachment.description.getOrElse(attachment.name)
+      val disposition = attachment.description.getOrElse(EmailAttachment.ATTACHMENT)
       for {
-        data <- dataOpt
-        mimetype <- mimetypeOpt
+        data <- attachment.data
+        mimetype <- attachment.mimetype
       } yield {
         val dataSource = new javax.mail.util.ByteArrayDataSource(data, mimetype)
-        email.attach(dataSource, name, description, disposition)
+        email.attach(dataSource, attachment.name, description, disposition)
       }
       for {
-        path <- pathOpt
+        path <- attachment.filePath
       } yield {
-        val attachment = new EmailAttachment()
-        attachment.setName(name)
-        attachment.setPath(path)
-        attachment.setDescription(description)
-        attachment.setDisposition(disposition)
-        email.attach(attachment)
+        val emailAttachment = new EmailAttachment()
+        emailAttachment.setName(attachment.name)
+        emailAttachment.setPath(path)
+        emailAttachment.setDescription(description)
+        emailAttachment.setDisposition(disposition)
+        email.attach(emailAttachment)
       }
     }
     email.setHostName(smtpHost)
@@ -371,7 +380,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
     email.setDebug(false)
     email.send
     context.get.clear()
-    attachmentcontext.get.clear()
+    attachmentContext.get.clear()
   }
 
   /**
@@ -438,17 +447,17 @@ case object MockMailer extends MailerBuilder {
     e("recipients").foreach(to => Logger.info("TO:" + to))
     e("ccRecipients").foreach(cc => Logger.info("CC:" + cc))
     e("bccRecipients").foreach(bcc => Logger.info("BCC:" + bcc))
-	e("header-") foreach(header => Logger.info("HEADER:" + header))
+    e("header-") foreach (header => Logger.info("HEADER:" + header))
+    attachmentContext.get foreach (attachment => Logger.info("ATTACHMENT:" + attachment))
     if (bodyText != null && bodyText != "") {
-
       Logger.info("TEXT: " + bodyText)
     }
     if (bodyHtml != null && bodyHtml != "") {
       Logger.info("HTML: " + bodyHtml)
     }
     context.get.clear()
+    attachmentContext.get.clear()
   }
-
 }
 
 /**
