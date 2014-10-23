@@ -350,7 +350,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
 						})
     attachmentContext.get.foreach { case attachment =>
       val description = attachment.description.getOrElse(attachment.name)
-      val disposition = attachment.description.getOrElse(EmailAttachment.ATTACHMENT)
+      val disposition = attachment.disposition.getOrElse(EmailAttachment.ATTACHMENT)
       for {
         data <- attachment.data
         mimetype <- attachment.mimetype
