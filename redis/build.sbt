@@ -4,7 +4,7 @@ name := "play-plugins-redis"
 
 organization := "com.typesafe.play.plugins"
 
-version := "2.3.0"
+version := "2.3.1"
 
 scalaVersion := "2.11.2"
 
