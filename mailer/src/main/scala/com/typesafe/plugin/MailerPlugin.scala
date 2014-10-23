@@ -1,5 +1,7 @@
 package com.typesafe.plugin
 
+import java.io.File
+
 import org.apache.commons.mail._
 
 import java.io.FilterOutputStream
@@ -11,6 +13,7 @@ import scala.collection.JavaConversions._
 
 import play.api._
 import play.api.Configuration._
+import java.net.URL
 
 trait MailerAPI extends MailerApiJavaInterop {
 
@@ -46,7 +49,6 @@ trait MailerAPI extends MailerApiJavaInterop {
    */
   def addHeader(key: String, value: String): MailerAPI
 
-
    /**
    * Sends a text email based on the provided data. 
    *
@@ -81,6 +83,19 @@ trait MailerBuilder extends MailerAPI {
   protected val context = new ThreadLocal[collection.mutable.Map[String,List[String]]] {
     protected override def initialValue(): collection.mutable.Map[String,List[String]] = {
       collection.mutable.Map[String,List[String]]()
+    }
+  }
+
+  case class Attachment(data: Option[Array[Byte]],
+                        mimetype: Option[String],
+                        filePath: Option[String],
+                        name: String,
+                        description: Option[String],
+                        disposition: Option[String])
+
+  protected val attachmentContext = new ThreadLocal[collection.mutable.MutableList[Attachment]] {
+    protected override def initialValue() = {
+      collection.mutable.MutableList()
     }
   }
 
@@ -188,6 +203,102 @@ trait MailerBuilder extends MailerAPI {
   }
 
   /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param data
+   * @param mimetype
+   */
+  def addAttachment(name: String, data: Array[Byte], mimetype: String): MailerAPI = {
+    addAttachment(name, data, mimetype, None, None)
+  }
+
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param data
+   * @param mimetype
+   * @param description
+   */
+  def addAttachment(name: String, data: Array[Byte], mimetype: String, description: String): MailerAPI = {
+    addAttachment(name, data, mimetype, description, null)
+  }
+
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param data
+   * @param mimetype
+   * @param description
+   * @param disposition
+   */
+  def addAttachment(name: String, data: Array[Byte], mimetype: String, description: String, disposition: String): MailerAPI = {
+    addAttachment(name, data, mimetype, if (description != null) Some(description) else None, if (disposition != null) Some(disposition) else None)
+  }
+
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param file
+   */
+  def addAttachment(name: String, file: File): MailerAPI = {
+    addAttachment(name, file, null)
+  }
+
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param file
+   * @param description
+   */
+  def addAttachment(name: String, file: File, description: String): MailerAPI = {
+    addAttachment(name, file, description, null)
+  }
+
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param file
+   * @param description
+   * @param disposition
+   */
+  def addAttachment(name: String, file: File, description: String, disposition: String): MailerAPI = {
+    addAttachment(name, file, if (description != null) Some(description) else None, if (disposition != null) Some(disposition) else None)
+  }
+
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param data
+   * @param mimetype
+   * @param description
+   * @param disposition
+   */
+  private def addAttachment(name: String, data: Array[Byte], mimetype: String, description: Option[String], disposition: Option[String]): MailerAPI = {
+    attachmentContext.get += Attachment(Some(data), Some(mimetype), None, name, description, disposition)
+    this
+  }
+
+  /**
+   * Adds attachment to this email message.
+   *
+   * @param name
+   * @param file
+   * @param description
+   * @param disposition
+   */
+  private def addAttachment(name: String, file: File, description: Option[String], disposition: Option[String]): MailerAPI  = {
+    attachmentContext.get += Attachment(None, None, Some(file.getPath), name, description, disposition)
+    this
+  }
+
+  /**
    * Sends a text email based on the provided data. 
    *
    * @param bodyText : pass a string or use a Play! text template to generate the template
@@ -239,6 +350,27 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
 						  val split = e.indexOf(":")
 						  email.addHeader(e.substring(0,split), e.substring(split+1))
 						})
+    attachmentContext.get.foreach { case attachment =>
+      val description = attachment.description.getOrElse(attachment.name)
+      val disposition = attachment.disposition.getOrElse(EmailAttachment.ATTACHMENT)
+      for {
+        data <- attachment.data
+        mimetype <- attachment.mimetype
+      } yield {
+        val dataSource = new javax.mail.util.ByteArrayDataSource(data, mimetype)
+        email.attach(dataSource, attachment.name, description, disposition)
+      }
+      for {
+        path <- attachment.filePath
+      } yield {
+        val emailAttachment = new EmailAttachment()
+        emailAttachment.setName(attachment.name)
+        emailAttachment.setPath(path)
+        emailAttachment.setDescription(description)
+        emailAttachment.setDisposition(disposition)
+        email.attach(emailAttachment)
+      }
+    }
     email.setHostName(smtpHost)
     email.setSmtpPort(smtpPort)
     email.setSSLOnConnect(smtpSsl)
@@ -265,6 +397,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
     }
     email.send
     context.get.clear()
+    attachmentContext.get.clear()
   }
 
   /**
@@ -331,17 +464,17 @@ case object MockMailer extends MailerBuilder {
     e("recipients").foreach(to => Logger.info("TO:" + to))
     e("ccRecipients").foreach(cc => Logger.info("CC:" + cc))
     e("bccRecipients").foreach(bcc => Logger.info("BCC:" + bcc))
-	e("header-") foreach(header => Logger.info("HEADER:" + header))
+    e("header-") foreach (header => Logger.info("HEADER:" + header))
+    attachmentContext.get foreach (attachment => Logger.info("ATTACHMENT:" + attachment))
     if (bodyText != null && bodyText != "") {
-
       Logger.info("TEXT: " + bodyText)
     }
     if (bodyHtml != null && bodyHtml != "") {
       Logger.info("HTML: " + bodyHtml)
     }
     context.get.clear()
+    attachmentContext.get.clear()
   }
-
 }
 
 /**

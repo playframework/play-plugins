@@ -2,7 +2,7 @@ name := "play-plugins-util"
     
 organization := "com.typesafe.play.plugins"
 
-version := "2.3.0"
+version := "2.3.1"
 
 scalaVersion := "2.11.1"
 
@@ -11,7 +11,7 @@ crossScalaVersions := Seq("2.11.1", "2.10.4")
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play" % "2.3.0" % "provided"
+  "com.typesafe.play" %% "play" % "2.3.1" % "provided"
 )
 
 publishTo <<= (version) { version: String =>

@@ -6,7 +6,7 @@ This plugin provides a simple emailer.
 
 play 2.3.x:
 
-* add ```"com.typesafe.play.plugins" %% "play-plugins-mailer" % "2.3.0"``` to your dependencies (```project/Build.scala```)
+* add ```"com.typesafe.play.plugins" %% "play-plugins-mailer" % "2.3.1"``` to your dependencies (```project/Build.scala```)
 
 and then
 * add ```1500:com.typesafe.plugin.CommonsMailerPlugin``` to your ```conf/play.plugins```
@@ -32,6 +32,11 @@ MailerAPI mail = play.Play.application().plugin(MailerPlugin.class).email();
 mail.setSubject("mailer");
 mail.setRecipient("Peter Hausel Junior <noreply@email.com>","example@foo.com");
 mail.setFrom("Peter Hausel <noreply@email.com>");
+//adds attachment
+mail.addAttachment("attachment.pdf", new File("/some/path/attachment.pdf"));
+//adds inline attachment from byte array
+byte[] data = "data".getBytes();
+mail.addAttachment("data.txt", data, "text/plain", "A simple file", EmailAttachment.INLINE);
 //sends html
 mail.sendHtml("<html>html</html>" );
 //sends text/text
@@ -50,6 +55,11 @@ mail.setRecipient("Peter Hausel Junior <noreply@email.com>","example@foo.com")
 //or use a list
 mail.setBcc(List("Dummy <example@example.org>", "Dummy2 <example@example.org>"):_*)
 mail.setFrom("Peter Hausel <noreply@email.com>")
+//adds attachment
+mail.addAttachment("attachment.pdf", new File("/some/path/attachment.pdf"))
+//adds inline attachment from byte array
+val data: Array[Byte] = "data".getBytes
+mail.addAttachment("data.txt", data, "text/plain", "A simple file", EmailAttachment.INLINE)
 //sends html
 mail.sendHtml("<html>html</html>" )
 //sends text/text
