@@ -2,8 +2,9 @@ package com.typesafe.plugin
 
 import org.apache.commons.mail._
 
+import java.io.FilterOutputStream
+import java.io.PrintStream
 import java.util.concurrent.Future
-import java.lang.reflect._
 import javax.mail.internet.InternetAddress
 
 import scala.collection.JavaConversions._
@@ -215,7 +216,7 @@ trait MailerBuilder extends MailerAPI {
  *  and also Justin Long's gist)
  */
 
-class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Boolean, smtpUser: Option[String], smtpPass: Option[String]) extends MailerBuilder {
+class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Boolean, smtpUser: Option[String], smtpPass: Option[String], debugMode: Boolean) extends MailerBuilder {
 
   /**
    * Sends an email based on the provided data. 
@@ -242,11 +243,26 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
     email.setSmtpPort(smtpPort)
     email.setSSLOnConnect(smtpSsl)
     if (smtpSsl) {
-      email.setSslSmtpPort(smtpPort.toString());
+      email.setSslSmtpPort(smtpPort.toString())
     }
     email.setStartTLSEnabled(smtpTls)
     for(u <- smtpUser; p <- smtpPass) yield email.setAuthenticator(new DefaultAuthenticator(u, p))
-    email.setDebug(false)
+    if (debugMode && Logger.isDebugEnabled) {
+      email.setDebug(debugMode)
+      email.getMailSession().setDebugOut(new PrintStream(new FilterOutputStream(null) {
+        override def write(b: Array[Byte]) {
+          Logger.debug(new String(b))
+        }
+
+        override def write(b: Array[Byte], off: Int, len: Int) {
+          Logger.debug(new String(b, off, len))
+        }
+
+        override def write(b: Int) {
+          this.write(new Array(b):Array[Byte])
+        }
+      }))
+    }
     email.send
     context.get.clear()
   }
@@ -351,7 +367,8 @@ class CommonsMailerPlugin(app: play.api.Application) extends MailerPlugin {
     val smtpTls = app.configuration.getBoolean("smtp.tls").getOrElse(false)
     val smtpUser = app.configuration.getString("smtp.user")
     val smtpPassword = app.configuration.getString("smtp.password")
-    new CommonsMailer(smtpHost, smtpPort, smtpSsl, smtpTls, smtpUser, smtpPassword)
+    val debugMode = app.configuration.getBoolean("smtp.debug").getOrElse(false)
+    new CommonsMailer(smtpHost, smtpPort, smtpSsl, smtpTls, smtpUser, smtpPassword, debugMode)
   }
 
   override lazy val enabled = {
