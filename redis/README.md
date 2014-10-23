@@ -74,7 +74,7 @@ play < 2.3.x:
 ```"com.typesafe" %% "play-plugins-redis" % "2.0.4"``` to your dependencies
 
 play = 2.3.x:
-```"com.typesafe.play.plugins" %% "play-plugins-redis" % "2.3.0"``` to your dependencies
+```"com.typesafe.play.plugins" %% "play-plugins-redis" % "2.3.1"``` to your dependencies
 
 * create a file called ```play.plugins``` in your ```app/conf``` directory
 
