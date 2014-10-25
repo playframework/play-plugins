@@ -13,7 +13,8 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play" % "2.3.1" % "provided",
   "org.apache.commons" % "commons-email" % "1.3.3",
-  "com.typesafe.play.plugins" %% "play-plugins-util" % "2.3.0"
+  "com.typesafe.play.plugins" %% "play-plugins-util" % "2.3.0",
+  "org.specs2" %% "specs2-core" % "2.4.9" % "test"
 )
 
 publishTo <<= (version) { version: String =>

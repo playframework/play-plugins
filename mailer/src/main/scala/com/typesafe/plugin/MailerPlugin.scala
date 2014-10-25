@@ -24,23 +24,22 @@ trait MailerAPI extends MailerApiJavaInterop {
    *
    * @param from
    */
-  def setFrom(from: String): MailerAPI 
+  def setFrom(from: String): MailerAPI
 
   /**
    * Defines the "reply to" email address.
    *
    * @param replyTo
    */
-  def setReplyTo(replyTo: String): MailerAPI 
+  def setReplyTo(replyTo: String): MailerAPI
 
   /**
    * Sets the charset for this email.
    *
    * @param charset
    */
-  def setCharset(charset: String): MailerAPI 
+  def setCharset(charset: String): MailerAPI
 
- 
   /**
    * Adds a request header to this email message.
    *
@@ -56,7 +55,7 @@ trait MailerAPI extends MailerApiJavaInterop {
    * @return the message id
    */
   def send(bodyText: String): String
-  
+
   /**
    * Sends an email based on the provided data. 
    *
@@ -76,8 +75,8 @@ trait MailerAPI extends MailerApiJavaInterop {
    * like view.Mails.templateHtml(tags).
    * @return the message id
    */
-  def sendHtml(bodyHtml: String): String 
-  
+  def sendHtml(bodyHtml: String): String
+
 }
 
 trait MailerBuilder extends MailerAPI {
@@ -329,7 +328,7 @@ trait MailerBuilder extends MailerAPI {
  *  and also Justin Long's gist)
  */
 
-class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Boolean, smtpUser: Option[String], smtpPass: Option[String], debugMode: Boolean) extends MailerBuilder {
+abstract class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Boolean, smtpUser: Option[String], smtpPass: Option[String], debugMode: Boolean) extends MailerBuilder {
 
   /**
    * Sends an email based on the provided data. 
@@ -341,7 +340,15 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
    * @return
    */
   def send(bodyText: String, bodyHtml: String): String = {
-    val email = createEmailer(bodyText,bodyHtml,e("charset").headOption.getOrElse("utf-8"))
+    val email = createEmail(bodyText, bodyHtml)
+    val messageId = send(email)
+    context.get.clear()
+    attachmentContext.get.clear()
+    messageId
+  }
+
+  protected def createEmail(bodyText: String, bodyHtml: String):MultiPartEmail = {
+    val email = createEmailBody(bodyText,bodyHtml,e("charset").headOption.getOrElse("utf-8"))
     email.setSubject(e("subject").headOption.getOrElse(""))
     e("from").foreach(setAddress(_) { (address, name) => email.setFrom(address, name) })
     e("replyTo").foreach(setAddress(_) { (address, name) => email.addReplyTo(address, name) })
@@ -349,9 +356,9 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
     e("ccRecipients").foreach(setAddress(_) { (address, name) => email.addCc(address, name) })
     e("bccRecipients").foreach(setAddress(_) { (address, name) => email.addBcc(address, name) })
     e("header-") foreach (e => {
-						  val split = e.indexOf(":")
-						  email.addHeader(e.substring(0,split), e.substring(split+1))
-						})
+      val split = e.indexOf(":")
+      email.addHeader(e.substring(0,split), e.substring(split+1))
+    })
     attachmentContext.get.foreach { case attachment =>
       val description = attachment.description.getOrElse(attachment.name)
       val disposition = attachment.disposition.getOrElse(EmailAttachment.ATTACHMENT)
@@ -397,11 +404,10 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
         }
       }))
     }
-    val messageId = email.send
-    context.get.clear()
-    attachmentContext.get.clear()
-    messageId
+    email
   }
+
+  def send(email: MultiPartEmail): String
 
   /**
    * Extracts an email address from the given string and passes to the enclosed method.
@@ -432,7 +438,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
    * @param bodyHtml
    * @return
    */
-  private def createEmailer(bodyText: String, bodyHtml: String, charset: String): MultiPartEmail = {
+  private def createEmailBody(bodyText: String, bodyHtml: String, charset: String): MultiPartEmail = {
     if (bodyHtml == null || bodyHtml == "") {
       val e = new MultiPartEmail()
       e.setCharset(charset)
@@ -505,7 +511,9 @@ class CommonsMailerPlugin(app: play.api.Application) extends MailerPlugin {
     val smtpUser = app.configuration.getString("smtp.user")
     val smtpPassword = app.configuration.getString("smtp.password")
     val debugMode = app.configuration.getBoolean("smtp.debug").getOrElse(false)
-    new CommonsMailer(smtpHost, smtpPort, smtpSsl, smtpTls, smtpUser, smtpPassword, debugMode)
+    new CommonsMailer(smtpHost, smtpPort, smtpSsl, smtpTls, smtpUser, smtpPassword, debugMode) {
+      def send(email: MultiPartEmail) = email.send()
+    }
   }
 
   override lazy val enabled = {
