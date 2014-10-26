@@ -53,8 +53,9 @@ trait MailerAPI extends MailerApiJavaInterop {
    * Sends a text email based on the provided data. 
    *
    * @param bodyText : pass a string or use a Play! text template to generate the template
+   * @return the message id
    */
-  def send(bodyText: String): Unit
+  def send(bodyText: String): String
   
   /**
    * Sends an email based on the provided data. 
@@ -63,8 +64,9 @@ trait MailerAPI extends MailerApiJavaInterop {
    * @param bodyHtml : pass a string or use a Play! text template to generate the template
    * like view.Mails.templateText(tags).
    * like view.Mails.templateHtml(tags).
+   * @return the message id
    */
-  def send(bodyText: String, bodyHtml: String): Unit
+  def send(bodyText: String, bodyHtml: String): String
 
   /**
    * Sends an Html email based on the provided data. 
@@ -72,9 +74,9 @@ trait MailerAPI extends MailerApiJavaInterop {
    * @param bodyText : pass a string or use a Play! text template to generate the template
    *  like view.Mails.templateText(tags).
    * like view.Mails.templateHtml(tags).
-   * @return
+   * @return the message id
    */
-  def sendHtml(bodyHtml: String): Unit 
+  def sendHtml(bodyHtml: String): String 
   
 }
 
@@ -306,7 +308,7 @@ trait MailerBuilder extends MailerAPI {
    * like view.Mails.templateHtml(tags).
    * @return
    */
-  def send(bodyText: String): Unit = send(bodyText, "")
+  def send(bodyText: String): String = send(bodyText, "")
 
     /**
    * Sends an Html email based on the provided data. 
@@ -316,7 +318,7 @@ trait MailerBuilder extends MailerAPI {
    * like view.Mails.templateHtml(tags).
    * @return
    */
-  def sendHtml(bodyHtml: String): Unit = send("", bodyHtml)
+  def sendHtml(bodyHtml: String): String = send("", bodyHtml)
 
 }
 
@@ -338,7 +340,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
    * like view.Mails.templateHtml(tags).
    * @return
    */
-  def send(bodyText: String, bodyHtml: String): Unit = {
+  def send(bodyText: String, bodyHtml: String): String = {
     val email = createEmailer(bodyText,bodyHtml,e("charset").headOption.getOrElse("utf-8"))
     email.setSubject(e("subject").headOption.getOrElse(""))
     e("from").foreach(setAddress(_) { (address, name) => email.setFrom(address, name) })
@@ -395,9 +397,10 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
         }
       }))
     }
-    email.send
+    val messageId = email.send
     context.get.clear()
     attachmentContext.get.clear()
+    messageId
   }
 
   /**
@@ -456,7 +459,7 @@ class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Bo
 
 case object MockMailer extends MailerBuilder {
 
-  def send(bodyText: String, bodyHtml: String): Unit = {
+  def send(bodyText: String, bodyHtml: String): String = {
     Logger.info("MOCK MAILER: send email")
     e("subject").foreach(subject => Logger.info("SUBJECT:" + subject))
     e("from").foreach(from => Logger.info("FROM:" + from))
@@ -474,6 +477,7 @@ case object MockMailer extends MailerBuilder {
     }
     context.get.clear()
     attachmentContext.get.clear()
+    null
   }
 }
 
