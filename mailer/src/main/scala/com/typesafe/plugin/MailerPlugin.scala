@@ -6,19 +6,15 @@ import org.apache.commons.mail._
 
 import java.io.FilterOutputStream
 import java.io.PrintStream
-import java.util.concurrent.Future
 import javax.mail.internet.InternetAddress
 
-import scala.collection.JavaConversions._
-
 import play.api._
-import play.api.Configuration._
-import java.net.URL
 
 trait MailerAPI extends MailerApiJavaInterop {
 
   /* Sets a subject for this email.*/
   def setSubject(subject: String): MailerAPI
+
   /**
    * Defines the sender of this email("from" address).
    *
@@ -70,7 +66,7 @@ trait MailerAPI extends MailerApiJavaInterop {
   /**
    * Sends an Html email based on the provided data. 
    *
-   * @param bodyText : pass a string or use a Play! text template to generate the template
+   * @param bodyHtml : pass a string or use a Play! text template to generate the template
    *  like view.Mails.templateText(tags).
    * like view.Mails.templateHtml(tags).
    * @return the message id
@@ -105,13 +101,13 @@ trait MailerBuilder extends MailerAPI {
    * @param key
    */
   protected def e(key: String): List[String] = {
-	val splitIndex = key.indexOf("-");
+    val splitIndex = key.indexOf("-")
     if (splitIndex >= 0)
       context.get.toList
-		  .filter(_._1 startsWith key.substring(0, splitIndex)) //get the keys that have the parameter key
-		  .map(e=> e._1.substring(splitIndex+1)+":"+e._2.head) //column cannot be part of a header's name, so we can use this for splitting.
+        .filter(_._1 startsWith key.substring(0, splitIndex)) //get the keys that have the parameter key
+        .map(e => e._1.substring(splitIndex + 1) + ":" + e._2.head) //column cannot be part of a header's name, so we can use this for splitting.
     else
-      context.get.get(key).getOrElse(List[String]())
+      context.get.getOrElse(key, List[String]())
   }
 
   /**
@@ -312,7 +308,7 @@ trait MailerBuilder extends MailerAPI {
     /**
    * Sends an Html email based on the provided data. 
    *
-   * @param bodyText : pass a string or use a Play! text template to generate the template
+   * @param bodyHtml : pass a string or use a Play! text template to generate the template
    *  like view.Mails.templateText(tags).
    * like view.Mails.templateHtml(tags).
    * @return
@@ -327,8 +323,7 @@ trait MailerBuilder extends MailerAPI {
  *  the EmailNotifier trait by Aishwarya Singhal
  *  and also Justin Long's gist)
  */
-
-abstract class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Boolean, smtpUser: Option[String], smtpPass: Option[String], debugMode: Boolean) extends MailerBuilder {
+abstract class CommonsMailer(smtpHost: String, smtpPort: Int, smtpSsl: Boolean, smtpTls: Boolean, smtpUser: Option[String], smtpPass: Option[String], debugMode: Boolean) extends MailerBuilder {
 
   def send(email: MultiPartEmail): String
 
@@ -390,13 +385,13 @@ abstract class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, sm
     email.setSmtpPort(smtpPort)
     email.setSSLOnConnect(smtpSsl)
     if (smtpSsl) {
-      email.setSslSmtpPort(smtpPort.toString())
+      email.setSslSmtpPort(smtpPort.toString)
     }
     email.setStartTLSEnabled(smtpTls)
     for(u <- smtpUser; p <- smtpPass) yield email.setAuthenticator(new DefaultAuthenticator(u, p))
     if (debugMode && Logger.isDebugEnabled) {
       email.setDebug(debugMode)
-      email.getMailSession().setDebugOut(new PrintStream(new FilterOutputStream(null) {
+      email.getMailSession.setDebugOut(new PrintStream(new FilterOutputStream(null) {
         override def write(b: Array[Byte]) {
           Logger.debug(new String(b))
         }
@@ -423,9 +418,9 @@ abstract class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, sm
 
     if (emailAddress != null) {
       try {
-        val iAddress = new InternetAddress(emailAddress);
-        val address = iAddress.getAddress()
-        val name = iAddress.getPersonal()
+        val iAddress = new InternetAddress(emailAddress)
+        val address = iAddress.getAddress
+        val name = iAddress.getPersonal
 
         setter(address, name)
       } catch {
@@ -466,7 +461,6 @@ abstract class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, sm
 /**
  * Emailer that just prints out the content to the console
  */
-
 case object MockMailer extends MailerBuilder {
 
   def send(bodyText: String, bodyHtml: String): String = {
@@ -499,7 +493,7 @@ trait MailerPlugin extends  play.api.Plugin {
 }
 
 /**
- * plugin impelementation
+ * plugin implementation
  */
 class CommonsMailerPlugin(app: play.api.Application) extends MailerPlugin {
 
