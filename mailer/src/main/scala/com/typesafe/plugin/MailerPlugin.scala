@@ -330,6 +330,12 @@ trait MailerBuilder extends MailerAPI {
 
 abstract class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, smtpTls: Boolean, smtpUser: Option[String], smtpPass: Option[String], debugMode: Boolean) extends MailerBuilder {
 
+  def send(email: MultiPartEmail): String
+
+  def createMultiPartEmail(): MultiPartEmail
+
+  def createHtmlEmail(): HtmlEmail
+
   /**
    * Sends an email based on the provided data. 
    *
@@ -407,8 +413,6 @@ abstract class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, sm
     email
   }
 
-  def send(email: MultiPartEmail): String
-
   /**
    * Extracts an email address from the given string and passes to the enclosed method.
    *
@@ -440,17 +444,17 @@ abstract class CommonsMailer(smtpHost: String,smtpPort: Int,smtpSsl: Boolean, sm
    */
   private def createEmailBody(bodyText: String, bodyHtml: String, charset: String): MultiPartEmail = {
     if (bodyHtml == null || bodyHtml == "") {
-      val e = new MultiPartEmail()
+      val e = createMultiPartEmail()
       e.setCharset(charset)
       e.setMsg(bodyText)
       e
     } else if (bodyText == null || bodyText == "") {
-        val e = new HtmlEmail()
+        val e = createHtmlEmail()
         e.setCharset(charset)
         e.setHtmlMsg(bodyHtml)
         e
     } else {
-        val e = new HtmlEmail()
+        val e = createHtmlEmail()
         e.setCharset(charset)
         e.setHtmlMsg(bodyHtml).setTextMsg(bodyText)
         e
@@ -512,7 +516,9 @@ class CommonsMailerPlugin(app: play.api.Application) extends MailerPlugin {
     val smtpPassword = app.configuration.getString("smtp.password")
     val debugMode = app.configuration.getBoolean("smtp.debug").getOrElse(false)
     new CommonsMailer(smtpHost, smtpPort, smtpSsl, smtpTls, smtpUser, smtpPassword, debugMode) {
-      def send(email: MultiPartEmail) = email.send()
+      override def send(email: MultiPartEmail) = email.send()
+      override def createMultiPartEmail() = new MultiPartEmail()
+      override def createHtmlEmail() = new HtmlEmail()
     }
   }
 
