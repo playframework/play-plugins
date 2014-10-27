@@ -438,24 +438,29 @@ abstract class CommonsMailer(smtpHost: String, smtpPort: Int, smtpSsl: Boolean, 
    * @return
    */
   private def createEmailBody(bodyText: String, bodyHtml: String, charset: String): MultiPartEmail = {
-    if (bodyHtml == null || bodyHtml == "") {
+    val bodyHtmlOpt = Option(bodyHtml).filter(_.trim.nonEmpty)
+    val bodyTextOpt = Option(bodyText).filter(_.trim.nonEmpty)
+    if (bodyHtmlOpt.isDefined) {
+      // HTML...
+      val e = createHtmlEmail()
+      e.setCharset(charset)
+      e.setHtmlMsg(bodyHtmlOpt.get)
+      // ... with text ?
+      if (bodyTextOpt.isDefined) {
+        e.setTextMsg(bodyTextOpt.get)
+      }
+      e
+    } else if (bodyTextOpt.isDefined) {
+      // Text only
       val e = createMultiPartEmail()
       e.setCharset(charset)
       e.setMsg(bodyText)
       e
-    } else if (bodyText == null || bodyText == "") {
-        val e = createHtmlEmail()
-        e.setCharset(charset)
-        e.setHtmlMsg(bodyHtml)
-        e
     } else {
-        val e = createHtmlEmail()
-        e.setCharset(charset)
-        e.setHtmlMsg(bodyHtml).setTextMsg(bodyText)
-        e
+      // Both empty
+      createMultiPartEmail()
     }
   }
-
 }
 
 /**
