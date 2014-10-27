@@ -63,6 +63,15 @@ class MailerPluginSpec extends Specification {
       email.getMailSession.getProperty("mail.debug") mustEqual "false"
     }
 
+    "create an empty email" in {
+      val mail = MockCommonsMailer
+      mail.setSubject("Subject")
+      mail.setRecipient("Guillaume Grossetie <ggrossetie@localhost.com>")
+      mail.setFrom("James Roper <jroper@typesafe.com>")
+      val messageId = mail.send("")
+      messageId mustEqual ""
+    }
+
     "create a simple email" in {
       val mail = createSimpleEmail
       val email = mail.createEmail("A text message", "<html><body><p>An <b>html</b> message</p></body></html>")
