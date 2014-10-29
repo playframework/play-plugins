@@ -3,5 +3,4 @@ language: scala
 env:
   - PROJECT=statsd
   - PROJECT=redis
-  - PROJECT=mailer
 script: cd util && sbt +publish-local && cd ../$PROJECT && sbt +test
