@@ -115,10 +115,6 @@ class RedisPlugin(app: Application) extends CachePlugin {
           oos.writeObject(value)
           oos.flush()
           prefix = "result"
-       } else if (value.isInstanceOf[Serializable]) {
-          oos = new ObjectOutputStream(baos)
-          oos.writeObject(value)
-          oos.flush()
        } else if (value.isInstanceOf[String]) {
           dos = new DataOutputStream(baos)
           dos.writeUTF(value.asInstanceOf[String])
@@ -135,6 +131,10 @@ class RedisPlugin(app: Application) extends CachePlugin {
           dos = new DataOutputStream(baos)
           dos.writeBoolean(value.asInstanceOf[Boolean])
           prefix = "boolean"
+       } else if (value.isInstanceOf[Serializable]) {
+          oos = new ObjectOutputStream(baos)
+          oos.writeObject(value)
+          oos.flush()
        } else {
           throw new IOException("could not serialize: "+ value.toString)
        }
