@@ -4,17 +4,14 @@ name := "play-plugins-redis"
 
 organization := "com.typesafe.play.plugins"
 
-version := "2.3.1"
+version := "2.4.0"
 
-scalaVersion := "2.11.2"
-
-crossScalaVersions := Seq("2.11.2", "2.10.4")
+scalaVersion := "2.11.6"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play"         %% "play"               % "2.3.0"     % "provided",
+  "com.typesafe.play"         %% "play"               % "2.4.0"     % "provided",
   "biz.source_code"           %  "base64coder"        % "2010-12-19",
-  "com.typesafe.play"         %% "play-cache"         % "2.3.0",
-  "com.typesafe.play.plugins" %% "play-plugins-util"  % "2.3.0",
+  "com.typesafe.play"         %% "play-cache"         % "2.4.0",
   "org.sedis"                 %%  "sedis"             % "1.2.2"
 )
 
@@ -29,6 +26,6 @@ publishTo <<= (version) { version: String =>
   else                                   Some("releases"  at nexus + "maven-releases/")
 }
 
-javacOptions ++= Seq("-source", "1.6", "-target", "1.6", "-Xlint:unchecked", "-encoding", "UTF-8")
+javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-encoding", "UTF-8")
 
 scalacOptions += "-deprecation"
