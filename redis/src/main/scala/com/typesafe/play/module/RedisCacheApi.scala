@@ -51,10 +51,9 @@ class RedisCacheApi @Inject()(val namespace: String, sedisPool: Pool, classLoade
   }
 
   def getOrElse[A: ClassTag](userKey: String, expiration: Duration)(orElse: => A) = {
-    val namespacedKey = s"$namespace::$userKey"
-    get[A](namespacedKey).getOrElse {
+    get[A](namespacedKey(userKey)).getOrElse {
       val value = orElse
-      set(namespacedKey, value, expiration)
+      set(namespacedKey(userKey), value, expiration)
       value
     }
   }
