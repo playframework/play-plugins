@@ -31,9 +31,6 @@ class RedisCacheApi @Inject()(val namespace: String, sedisPool: Pool, classLoade
           val data: Seq[String] = rawData.split("-")
           val bytes = Base64Coder.decode(data.last)
           data.head match {
-            case "result" =>
-              Some(RedisResult.unwrapResult(withObjectInputStream(bytes)(_.readObject())
-                .asInstanceOf[RedisResult]).asInstanceOf[T])
             case "oos" => Some(withObjectInputStream(bytes)(_.readObject().asInstanceOf[T]))
             case "string" => Some(withDataInputStream(bytes)(_.readUTF().asInstanceOf[T]))
             case "int" => Some(withDataInputStream(bytes)(_.readInt().asInstanceOf[T]))
@@ -74,11 +71,6 @@ class RedisCacheApi @Inject()(val namespace: String, sedisPool: Pool, classLoade
     try {
       val baos = new ByteArrayOutputStream()
       val prefix = value match {
-        case _: RedisResult =>
-          oos = new ObjectOutputStream(baos)
-          oos.writeObject(value)
-          oos.flush()
-          "result"
         case _: String =>
           dos = new DataOutputStream(baos)
           dos.writeUTF(value.asInstanceOf[String])
