@@ -3,13 +3,15 @@ package com.typesafe.play.redis
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
+import org.sedis.Pool
+import org.specs2.specification.AfterAll
 import play.api.cache.{CacheApi, Cached}
 import play.api.inject.BindingKey
-import play.api.mvc.{Action, Results}
+import play.api.mvc.{RequestHeader, Action, Results}
 import play.api.test._
 import play.cache.{NamedCache, NamedCacheImpl}
 
-class RedisCachedSpec extends PlaySpecification {
+class RedisCachedSpec extends PlaySpecification with AfterAll {
 
   sequential
 
@@ -141,6 +143,10 @@ class RedisCachedSpec extends PlaySpecification {
       cache.get("bool-test") must beSome(testValue)
     }
 
+  }
+
+  override def afterAll() = {
+    redisOnlyCache().injector.instanceOf[Pool].withJedisClient(client => client.flushAll())
   }
 }
 
