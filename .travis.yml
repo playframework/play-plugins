@@ -1,6 +1,12 @@
-jdk: openjdk6
+jdk: 
+  - openjdk6
+  - openjdk8
 language: scala
 env:
   - PROJECT=statsd
   - PROJECT=redis
 script: cd util && sbt +publish-local && cd ../$PROJECT && sbt +test
+matrix:
+  exclude:
+  - jdk: openjdk6
+      env: PROJECT=redis
