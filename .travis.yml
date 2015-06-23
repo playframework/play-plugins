@@ -9,4 +9,4 @@ script: cd util && sbt +publish-local && cd ../$PROJECT && sbt +test
 matrix:
   exclude:
   - jdk: openjdk6
-      env: PROJECT=redis
+    env: PROJECT=redis
