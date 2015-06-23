@@ -1,18 +1,18 @@
-import scala.Some
+name := "play-modules-redis"
 
-name := "play-plugins-redis"
-
-organization := "com.typesafe.play.plugins"
+organization := "com.typesafe.play.modules"
 
 version := "2.4.0"
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.2"
+
+crossScalaVersions := Seq("2.11.2", "2.10.4")
 
 libraryDependencies ++= Seq(
   "com.typesafe.play"         %% "play"               % "2.4.0"     % "provided",
   "biz.source_code"           %  "base64coder"        % "2010-12-19",
   "com.typesafe.play"         %% "play-cache"         % "2.4.0",
-  "org.sedis"                 %%  "sedis"             % "1.2.2"
+  "org.sedis"                 %% "sedis"              % "1.2.2"
 )
 
 resolvers ++= Seq(
