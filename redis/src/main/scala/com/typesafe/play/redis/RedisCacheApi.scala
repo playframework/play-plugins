@@ -91,7 +91,7 @@ class RedisCacheApi @Inject()(val namespace: String, sedisPool: Pool, classLoade
           oos = new ObjectOutputStream(baos)
           oos.writeObject(value)
           oos.flush()
-          "oss"
+          "oos"
         case _ =>
           throw new IOException("could not serialize: " + value.toString)
       }
