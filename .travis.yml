@@ -12,3 +12,5 @@ matrix:
     env: PROJECT=redis
   - jdk: oraclejdk8
     env: PROJECT=statsd
+services:
+  - redis-server
