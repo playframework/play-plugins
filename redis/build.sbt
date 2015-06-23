@@ -20,7 +20,8 @@ libraryDependencies ++= Seq(
 
 resolvers ++= Seq(
   "pk11 repo" at "http://pk11-scratch.googlecode.com/svn/trunk",
-  "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+  "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
+  "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 )
 
 publishTo <<= (version) { version: String =>
