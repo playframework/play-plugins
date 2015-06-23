@@ -7,9 +7,7 @@ import biz.source_code.base64Coder.Base64Coder
 import org.sedis.Pool
 import play.api.Logger
 import play.api.cache.CacheApi
-import play.api.mvc.Result
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
@@ -36,7 +34,7 @@ class RedisCacheApi @Inject()(val namespace: String, sedisPool: Pool, classLoade
             case "int" => Some(withDataInputStream(bytes)(_.readInt().asInstanceOf[T]))
             case "long" => Some(withDataInputStream(bytes)(_.readLong().asInstanceOf[T]))
             case "boolean" => Some(withDataInputStream(bytes)(_.readBoolean().asInstanceOf[T]))
-            case _ => throw new IOException("can not recognize value")
+            case _ => throw new IOException(s"was not able to recognize the type of serialized value. The type was ${data.head} ")
           }
       }
     } catch {
@@ -58,14 +56,9 @@ class RedisCacheApi @Inject()(val namespace: String, sedisPool: Pool, classLoade
   def remove(userKey: String): Unit = sedisPool.withJedisClient(_.del(namespacedKey(userKey)))
 
   def set(userKey: String, value: Any, expiration: Duration) {
-    val expirationInSec = if(expiration == Duration.Inf) 0 else expiration.toSeconds.toInt
-    value match {
-      case result: Result => RedisResult.wrapResult(result).map(set_(namespacedKey(userKey), _, expirationInSec))
-      case _ => set_(namespacedKey(userKey), value, expirationInSec)
-    }
-  }
+    val expirationInSec = if (expiration == Duration.Inf) 0 else expiration.toSeconds.toInt
+    val key = namespacedKey(userKey)
 
-  private def set_(key: String, value: Any, expiration: Int) {
     var oos: ObjectOutputStream = null
     var dos: DataOutputStream = null
     try {
@@ -101,7 +94,7 @@ class RedisCacheApi @Inject()(val namespace: String, sedisPool: Pool, classLoade
 
       sedisPool.withJedisClient { client =>
         client.set(key, redisV)
-        if (expiration != 0) client.expire(key, expiration)
+        if (expirationInSec != 0) client.expire(key, expirationInSec)
       }
     } catch {
       case ex: IOException =>
