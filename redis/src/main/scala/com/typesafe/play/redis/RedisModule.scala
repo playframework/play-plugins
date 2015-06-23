@@ -1,4 +1,4 @@
-package com.typesafe.play.module
+package com.typesafe.play.redis
 
 import javax.inject.{Inject, Provider}
 

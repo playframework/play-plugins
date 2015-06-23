@@ -1,4 +1,4 @@
-package com.typesafe.play.module
+package com.typesafe.play.redis
 
 import play.api.libs.iteratee._
 import play.api.mvc._

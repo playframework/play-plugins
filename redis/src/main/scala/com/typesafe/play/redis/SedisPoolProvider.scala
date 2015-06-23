@@ -1,4 +1,4 @@
-package com.typesafe.play.module
+package com.typesafe.play.redis
 
 import java.net.URI
 import javax.inject.{Inject, Provider, Singleton}
