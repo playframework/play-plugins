@@ -1,6 +1,6 @@
 jdk: 
   - openjdk6
-  - openjdk8
+  - oraclejdk8
 language: scala
 env:
   - PROJECT=statsd
@@ -10,3 +10,5 @@ matrix:
   exclude:
   - jdk: openjdk6
     env: PROJECT=redis
+  - jdk: oraclejdk8
+    env: PROJECT=statsd
