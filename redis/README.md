@@ -103,8 +103,7 @@ play = 2.3.x:
 play = 2.4.x:
 ```"com.typesafe" %% "play-modules-redis" % "2.4.0"``` to your dependencies
 
-* This module will not override the default cache module if you loaded it. The default cache module will be used for non-named cache UNLESS this module is the only cache module that was loaded. If this module is the only cache module being loaded, it will work as expected. To disable the default cache so that this Redis Module can be the default cache you must
- put this in your configuration:
+* The default cache module (EhCache) will be used for all non-named cache UNLESS this module (RedisModule) is the only cache module that was loaded. If this module is the only cache module being loaded, it will work as expected on named and non-named cache. To disable the default cache module so that this Redis Module can be the default cache you must put this in your configuration:
  
  ```
  play.modules.disabled = ["play.api.cache.EhCacheModule"]
