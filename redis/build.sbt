@@ -10,9 +10,12 @@ crossScalaVersions := Seq("2.11.2", "2.10.4")
 
 libraryDependencies ++= Seq(
   "com.typesafe.play"         %% "play"               % "2.4.0"     % "provided",
-  "biz.source_code"           %  "base64coder"        % "2010-12-19",
   "com.typesafe.play"         %% "play-cache"         % "2.4.0",
-  "org.sedis"                 %% "sedis"              % "1.2.2"
+  "biz.source_code"           %  "base64coder"        % "2010-12-19",
+  "org.sedis"                 %% "sedis"              % "1.2.2",
+  "com.typesafe.play"         %% "play-test"          % "2.4.0"     % "test",
+  "com.typesafe.play"         %% "play-specs2"        % "2.4.0"     % "test",
+  "org.specs2"                %% "specs2-core"        % "3.3.1"     % "test"
 )
 
 resolvers ++= Seq(
