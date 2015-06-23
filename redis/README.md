@@ -40,7 +40,7 @@ val o = play.api.cache.Cache.getAs[String]("mykey")
 
 
 #### Allows direct access to Jedis and Sedis: 
-
+play = 2.3.x:
 ```java
 //java
 import com.typesafe.plugin.RedisPlugin;
@@ -66,6 +66,19 @@ pool.withJedisClient { client =>
   Option[String] single = Dress.up(client).get("single")
 }
 ```
+play = 2.4.x:
+Because the underlying Sedis Pool was injected for the cache module to use, you can just inject the sedis Pool yourself, something like this:
+
+```scala
+//scala
+import javax.inject.Inject
+import org.sedis.Pool
+
+class TryIt @Inject()(sedisPool: Pool) extends Controller {
+   val directValue: String = sedisPool.withJedisClient(client => client.get("someKey"))
+}
+```
+
 # How to install
 
 * add 
@@ -82,10 +95,28 @@ play = 2.3.x:
 
 *  while this plugin is going to be loaded before the default cache implementation,  it's a good practice to disable the overwritten plugin:
 
-```
-#conf/application.conf
-ehcacheplugin=disabled
-```
+ ```
+ #conf/application.conf
+ ehcacheplugin=disabled
+ ```
+
+play = 2.4.x:
+```"com.typesafe" %% "play-modules-redis" % "2.4.0"``` to your dependencies
+
+* This module will not override the default cache module if you loaded it. The default cache module will be used for non-named cache UNLESS this module is the only cache module that was loaded. If this module is the only cache module being loaded, it will work as expected. To disable the default cache so that this Redis Module can be the default cache you must
+ put this in your configuration:
+ 
+ ```
+ play.modules.disabled = ["play.api.cache.EhCacheModule"]
+ ```
+
+* This module supports play 2.4 NamedCaches through key namespacing on a single Sedis pool. To add additional namepsaces besides the default (play), the configuration would look like such:
+
+ ```
+ play.cache.redis.bindCaches = ["db-cache", "user-cache", "session-cache"]
+ ```
+
+
 
 # Sample
 
