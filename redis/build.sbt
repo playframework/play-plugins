@@ -1,12 +1,10 @@
 name := "play-modules-redis"
-
 organization := "com.typesafe.play.modules"
 
-version := "2.4.0"
-
-scalaVersion := "2.11.2"
-
-crossScalaVersions := Seq("2.11.2", "2.10.4")
+scalaVersion := "2.11.6"
+crossScalaVersions := Seq("2.11.6", "2.10.5")
+javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-encoding", "UTF-8")
+scalacOptions += "-deprecation"
 
 libraryDependencies ++= Seq(
   "com.typesafe.play"         %% "play"               % "2.4.0"     % "provided",
@@ -20,16 +18,43 @@ libraryDependencies ++= Seq(
 
 resolvers ++= Seq(
   "pk11 repo" at "http://pk11-scratch.googlecode.com/svn/trunk",
-  "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
   "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 )
 
-publishTo <<= (version) { version: String =>
-  val nexus = "https://private-repo.typesafe.com/typesafe/"
-  if (version.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "maven-snapshots/")
-  else                                   Some("releases"  at nexus + "maven-releases/")
+pomExtra := {
+  <scm>
+    <url>https://github.com/typesafehub/play-plugins</url>
+    <connection>scm:git:git@github.com:typesafehub/play-plugins.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>typesafe</id>
+      <name>Typesafe</name>
+      <url>https://typesafe.com</url>
+    </developer>
+  </developers>
 }
+pomIncludeRepository := { _ => false }
+homepage := Some(url(s"https://github.com/typesafehub/play-ulgins"))
+licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html"))
 
-javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-encoding", "UTF-8")
+sonatypeProfileName := "com.typesafe"
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
+releaseTagName := s"redis-${(version in ThisBuild).value}"
+releaseCrossBuild := true
 
-scalacOptions += "-deprecation"
+import ReleaseTransformations._
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  publishArtifacts,
+  releaseStepCommand("sonatypeRelease"),
+  setNextVersion,
+  commitNextVersion,
+  pushChanges
+)
+
