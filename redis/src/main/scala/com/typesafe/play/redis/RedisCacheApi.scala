@@ -39,8 +39,7 @@ class RedisCacheApi @Inject()(val namespace: String, sedisPool: Pool, classLoade
       }
     } catch {
       case ex: Exception =>
-        Logger.warn("could not deserialize key:" + namespacedKey(userKey) + " ex:" + ex.toString)
-        ex.printStackTrace()
+        Logger.warn("could not deserialize key:" + namespacedKey(userKey), ex)
         None
     }
   }
