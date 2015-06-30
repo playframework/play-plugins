@@ -68,11 +68,11 @@ class RedisCachedSpec extends PlaySpecification with AfterAll {
 
     "support compile time DI" in new WithApplicationLoader(applicationLoader = new CompileTimeLoader) {
       val result1 = route(FakeRequest(GET, "/compileTime")).get
-
       status(result1) must_== OK
       contentAsString(result1) must_== "1"
 
       val result2 = route(FakeRequest(GET, "/compileTime")).get
+      status(result2) must_== OK
       contentAsString(result2) must_== "1"
 
       // Test that the same headers are added
