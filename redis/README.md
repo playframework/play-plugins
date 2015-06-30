@@ -79,6 +79,21 @@ class TryIt @Inject()(sedisPool: Pool) extends Controller {
 }
 ```
 
+```java
+//java
+import javax.inject.Inject
+import redis.clients.jedis.JedisPool
+
+class TryIt extends Controller {
+   
+   //The JedisPool will be injected for you from the module
+   @Inject JedisPool jedisPool;
+
+   ...
+}
+
+```
+
 # How to install
 
 * add 
