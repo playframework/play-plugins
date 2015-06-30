@@ -5,9 +5,13 @@ import javax.inject.Inject
 
 import org.sedis.Pool
 import org.specs2.specification.AfterAll
+import play.api.ApplicationLoader.Context
+import play.api._
 import play.api.cache.{CacheApi, Cached}
 import play.api.inject.BindingKey
-import play.api.mvc.{RequestHeader, Action, Results}
+import play.api.mvc.{Action, Results}
+import play.api.routing.Router
+import play.api.routing.sird._
 import play.api.test._
 import play.cache.{NamedCache, NamedCacheImpl}
 
@@ -60,6 +64,20 @@ class RedisCachedSpec extends PlaySpecification with AfterAll {
       // Test that the values are in the right cache
       app.injector.instanceOf[CacheApi].get("foo") must beNone
       controller.isCached("foo-etag") must beTrue
+    }
+
+    "support compile time DI" in new WithApplicationLoader(applicationLoader = new CompileTimeLoader) {
+      val result1 = route(FakeRequest(GET, "/compileTime")).get
+
+      status(result1) must_== OK
+      contentAsString(result1) must_== "1"
+
+      val result2 = route(FakeRequest(GET, "/compileTime")).get
+      contentAsString(result2) must_== "1"
+
+      // Test that the same headers are added
+      header(ETAG, result2) must_== header(ETAG, result1)
+      header(EXPIRES, result2) must_== header(EXPIRES, result1)
     }
   }
 
@@ -165,4 +183,24 @@ class CachedController @Inject()(cached: Cached) {
 
 class NamedCacheController @Inject()(@NamedCache("redis-results") cached: Cached, @NamedCache("redis-results") cache: CacheApi) extends CachedController(cached) {
   def isCached(key: String): Boolean = cache.get[String](key).isDefined
+}
+
+class CompileTimeLoader extends ApplicationLoader {
+  override def load(context: Context): Application = {
+    new CompileTimeAppComponents(context).application
+  }
+}
+
+class CompileTimeAppComponents(context: Context) extends BuiltInComponentsFromContext(context) with RedisCacheComponents {
+
+  lazy val cached: Cached = new Cached(redisDefaultCacheApi)
+
+  override def router: Router = Router.from {
+    case GET(p"/compileTime") => cached("redis-ci-cached") {
+      Action {
+        val invoked = new AtomicInteger()
+        Results.Ok("" + invoked.incrementAndGet())
+      }
+    }
+  }
 }

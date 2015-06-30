@@ -4,10 +4,31 @@ import javax.inject.{Inject, Provider}
 
 import org.sedis.Pool
 import play.api.cache.{CacheApi, Cached, NamedCache}
-import play.api.inject.{Binding, BindingKey, Injector, Module}
+import play.api.inject._
 import play.api.{Configuration, Environment}
 import play.cache.{CacheApi => JavaCacheApi, DefaultCacheApi => DefaultJavaCacheApi, NamedCacheImpl}
 import redis.clients.jedis.JedisPool
+
+/**
+ * Redis cache components for compile time injection
+ */
+trait RedisCacheComponents {
+  def environment: Environment
+  def configuration: Configuration
+  def applicationLifecycle: ApplicationLifecycle
+
+  lazy val jedisPool: JedisPool = new JedisPoolProvider(configuration, applicationLifecycle).get
+  lazy val sedisPool: Pool = new SedisPoolProvider(jedisPool).get
+
+  /**
+   * Use this to create with the given name.
+   */
+  def cacheApi(name: String): CacheApi = {
+    new RedisCacheApi(name, sedisPool, environment.classLoader)
+  }
+
+  lazy val redisDefaultCacheApi: CacheApi = cacheApi(RedisModule.defaultCacheNameFromConfig(configuration))
+}
 
 class RedisModule extends Module {
 
@@ -15,7 +36,7 @@ class RedisModule extends Module {
 
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
     val ehcacheDisabled = configuration.getStringList("play.modules.disabled").fold(false)(x => x.contains("play.api.cache.EhCacheModule"))
-    val defaultCacheName = configuration.underlying.getString("play.cache.defaultCache")
+    val defaultCacheName = RedisModule.defaultCacheNameFromConfig(configuration)
     val bindCaches = configuration.underlying.getStringList("play.cache.redis.bindCaches").toSeq
 
     // Creates a named cache qualifier
@@ -45,6 +66,12 @@ class RedisModule extends Module {
       Seq(bind[CacheApi].to(bind[CacheApi].qualifiedWith(named(defaultCacheName)))) ++ bindCache(defaultCacheName) ++ defaultBindings
     else
       defaultBindings
+  }
+}
+
+object RedisModule {
+  def defaultCacheNameFromConfig(configuration: Configuration): String = {
+    configuration.underlying.getString("play.cache.defaultCache")
   }
 }
 
