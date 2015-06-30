@@ -7,6 +7,7 @@ import play.api.cache.{CacheApi, Cached, NamedCache}
 import play.api.inject.{Binding, BindingKey, Injector, Module}
 import play.api.{Configuration, Environment}
 import play.cache.{CacheApi => JavaCacheApi, DefaultCacheApi => DefaultJavaCacheApi, NamedCacheImpl}
+import redis.clients.jedis.JedisPool
 
 class RedisModule extends Module {
 
@@ -34,6 +35,7 @@ class RedisModule extends Module {
     }
 
     val defaultBindings = Seq(
+      bind[JedisPool].toProvider[JedisPoolProvider],
       bind[Pool].toProvider[SedisPoolProvider],
       bind[JavaCacheApi].to[DefaultJavaCacheApi]
     ) ++ bindCaches.flatMap(bindCache)
