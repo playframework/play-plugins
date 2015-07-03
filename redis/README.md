@@ -91,8 +91,11 @@ class TryIt extends Controller {
 
    ...
 }
-
 ```
+
+The Play 2.4.x module also supports compile time DI via RedisCacheComponents. Mix this in with your custom application loader just like you would if you were using EhCacheComponents from the reference cache module.
+
+
 
 # How to install
 
@@ -132,10 +135,6 @@ and you'll probably need to add this resolver too to resolve Sedis (see [issue](
  ```
 
 
-
-# Sample
-
-for an example, see the bundled sample app
 
 
 ## Licence
