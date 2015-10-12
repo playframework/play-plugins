@@ -161,6 +161,27 @@ class RedisCachedSpec extends PlaySpecification with AfterAll {
       cache.get("bool-test") must beSome(testValue)
     }
 
+    "getOrElse should behave same as get and set" in new WithApplication(redisOnlyCache()) {
+      val cache = app.injector.instanceOf[CacheApi]
+
+      val testValue = "my sample String"
+
+      val orElse = cache.getOrElse[String]("getOrElseTest"){
+        testValue
+      }
+      orElse mustEqual testValue
+
+      val getValue = cache.get("getOrElseTest")
+      getValue must beSome(testValue)
+
+
+      val setValue = "mySetValue"
+      cache.set("getOrElseTestSet", setValue)
+
+      cache.getOrElse("getOrElseTestSet"){"anotherStringWhichShouldNotHappen"} mustEqual setValue
+
+    }
+
   }
 
   override def afterAll() = {
