@@ -1,4 +1,4 @@
-jdk: 
+jdk:
   - openjdk6
   - oraclejdk8
 language: scala
@@ -14,3 +14,4 @@ matrix:
     env: PROJECT=statsd
 services:
   - redis-server
+sudo: false
