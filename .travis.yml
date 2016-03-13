@@ -14,4 +14,11 @@ matrix:
     env: PROJECT=statsd
 services:
   - redis-server
+before_cache:
+  - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
+  - find $HOME/.sbt -name "*.lock" -delete
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt/boot/
 sudo: false
