@@ -59,6 +59,7 @@ try {
 ```scala
 //scala
 import play.api.Play.current
+import com.typesafe.plugin.use
 import com.typesafe.plugin.RedisPlugin
 
 val pool = use[RedisPlugin].sedisPool
