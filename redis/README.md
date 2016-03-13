@@ -120,9 +120,13 @@ play = 2.3.x:
  ```
 
 play = 2.4.x:
-```"com.typesafe.play.modules" %% "play-modules-redis" % "2.4.0"``` to your dependencies
+```"com.typesafe.play.modules" %% "play-modules-redis" % "2.4.1"``` to your dependencies (e.g. build.sbt)
 and you'll probably need to add this resolver too to resolve Sedis (see [issue](https://github.com/typesafehub/play-plugins/issues/141)):
 ```resolvers += "google-sedis-fix" at "http://pk11-scratch.googlecode.com/svn/trunk"```
+
+* Most likely you will want to manage your dependency using guice so that you can inject JedisPool to classes other than the Play controllers e.g. your data access objects. To enable guice add the following to your dependencies: 
+```"com.google.inject.extensions" % "guice-servlet" % "4.0"```
+
 * The default cache module (EhCache) will be used for all non-named cache UNLESS this module (RedisModule) is the only cache module that was loaded. If this module is the only cache module being loaded, it will work as expected on named and non-named cache. To disable the default cache module so that this Redis Module can be the default cache you must put this in your configuration:
  
  ```
