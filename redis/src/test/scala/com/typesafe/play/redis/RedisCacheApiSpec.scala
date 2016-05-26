@@ -9,6 +9,7 @@ import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.cache.{CacheApi, Cached}
 import play.api.inject.BindingKey
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{Action, Results}
 import play.api.routing.Router
 import play.api.routing.sird._
@@ -19,15 +20,15 @@ class RedisCachedSpec extends PlaySpecification with AfterAll {
 
   sequential
 
-  val redisOnlyCache: (() => FakeApplication) = { () => FakeApplication(additionalConfiguration = Map(
-    "play.modules.disabled" -> Seq("play.api.cache.EhCacheModule")
-  ))
+  val redisOnlyCache: (() => Application) = { () => new GuiceApplicationBuilder()
+      .configure(Configuration("play.modules.disabled" -> Seq("play.api.cache.EhCacheModule")))
+      .build()
   }
 
-  val multiCache: (() => FakeApplication) = { () => FakeApplication(additionalConfiguration = Map(
-    "play.cache.redis.bindCaches" -> Seq("redis-test", "redis-results"),
-    "play.cache.bindCaches" -> Seq("ehcache-test")
-  ))
+  val multiCache: (() => Application) = { () => new GuiceApplicationBuilder()
+    .configure(Configuration("play.cache.redis.bindCaches" -> Seq("redis-test", "redis-results"),
+      "play.cache.bindCaches" -> Seq("ehcache-test")))
+      .build()
   }
 
   "The cached action" should {
@@ -67,11 +68,11 @@ class RedisCachedSpec extends PlaySpecification with AfterAll {
     }
 
     "support compile time DI" in new WithApplicationLoader(applicationLoader = new CompileTimeLoader) {
-      val result1 = route(FakeRequest(GET, "/compileTime")).get
+      val result1 = route(app, FakeRequest(GET, "/compileTime")).get
       status(result1) must_== OK
       contentAsString(result1) must_== "1"
 
-      val result2 = route(FakeRequest(GET, "/compileTime")).get
+      val result2 = route(app, FakeRequest(GET, "/compileTime")).get
       status(result2) must_== OK
       contentAsString(result2) must_== "1"
 
