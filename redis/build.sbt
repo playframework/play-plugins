@@ -6,8 +6,8 @@ javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-e
 scalacOptions += "-deprecation"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play"         %% "play"               % "2.5.0"     % "provided",
-  "com.typesafe.play"         %% "play-cache"         % "2.5.0",
+  "com.typesafe.play"         %% "play"               % "2.5.3"     % "provided",
+  "com.typesafe.play"         %% "play-cache"         % "2.5.3",
   "biz.source_code"           %  "base64coder"        % "2010-12-19",
   "org.sedis"                 %% "sedis"              % "1.2.2",
   "com.typesafe.play"         %% "play-test"          % "2.5.0"     % "test",
@@ -56,4 +56,3 @@ releaseProcess := Seq[ReleaseStep](
   commitNextVersion,
   pushChanges
 )
-
