@@ -5,7 +5,7 @@ language: scala
 env:
   - PROJECT=statsd
   - PROJECT=redis
-script: cd util && sbt +publish-local && cd ../$PROJECT && sbt +test
+script: ./run-tests-travis.sh
 matrix:
   exclude:
   - jdk: openjdk6

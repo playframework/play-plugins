@@ -1,18 +1,17 @@
 name := "play-modules-redis"
 organization := "com.typesafe.play.modules"
 
-scalaVersion := "2.11.6"
-crossScalaVersions := Seq("2.11.6", "2.10.5")
+scalaVersion := "2.11.8"
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-encoding", "UTF-8")
 scalacOptions += "-deprecation"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play"         %% "play"               % "2.4.0"     % "provided",
-  "com.typesafe.play"         %% "play-cache"         % "2.4.0",
+  "com.typesafe.play"         %% "play"               % "2.5.3"     % "provided",
+  "com.typesafe.play"         %% "play-cache"         % "2.5.3",
   "biz.source_code"           %  "base64coder"        % "2010-12-19",
   "org.sedis"                 %% "sedis"              % "1.2.2",
-  "com.typesafe.play"         %% "play-test"          % "2.4.0"     % "test",
-  "com.typesafe.play"         %% "play-specs2"        % "2.4.0"     % "test",
+  "com.typesafe.play"         %% "play-test"          % "2.5.0"     % "test",
+  "com.typesafe.play"         %% "play-specs2"        % "2.5.0"     % "test",
   "org.specs2"                %% "specs2-core"        % "3.3.1"     % "test"
 )
 
@@ -57,4 +56,3 @@ releaseProcess := Seq[ReleaseStep](
   commitNextVersion,
   pushChanges
 )
-
