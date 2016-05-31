@@ -1,18 +1,19 @@
 name := "play-modules-redis"
 organization := "com.typesafe.play.modules"
 
+crossScalaVersions := Seq("2.11.8")
 scalaVersion := "2.11.8"
+
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-encoding", "UTF-8")
 scalacOptions += "-deprecation"
 
 libraryDependencies ++= Seq(
   "com.typesafe.play"         %% "play"               % "2.5.3"     % "provided",
+  "com.typesafe.play"         %% "play-test"          % "2.5.3"     % "test",
+  "com.typesafe.play"         %% "play-specs2"        % "2.5.3"     % "test",
   "com.typesafe.play"         %% "play-cache"         % "2.5.3",
   "biz.source_code"           %  "base64coder"        % "2010-12-19",
-  "org.sedis"                 %% "sedis"              % "1.2.2",
-  "com.typesafe.play"         %% "play-test"          % "2.5.0"     % "test",
-  "com.typesafe.play"         %% "play-specs2"        % "2.5.0"     % "test",
-  "org.specs2"                %% "specs2-core"        % "3.3.1"     % "test"
+  "org.sedis"                 %% "sedis"              % "1.2.2"
 )
 
 resolvers ++= Seq(
@@ -34,7 +35,7 @@ pomExtra := {
   </developers>
 }
 pomIncludeRepository := { _ => false }
-homepage := Some(url(s"https://github.com/typesafehub/play-ulgins"))
+homepage := Some(url(s"https://github.com/typesafehub/play-plugins"))
 licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html"))
 
 sonatypeProfileName := "com.typesafe"
