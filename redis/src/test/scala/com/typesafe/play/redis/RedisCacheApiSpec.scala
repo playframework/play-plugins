@@ -25,6 +25,12 @@ class RedisCachedSpec extends PlaySpecification with AfterAll {
       .build()
   }
 
+  val redisDownCache: (() => Application) = { () => new GuiceApplicationBuilder()
+    .configure(Configuration("play.modules.disabled" -> Seq("play.api.cache.EhCacheModule"),
+      "redis.port" -> "12345"))
+    .build()
+  }
+
   val multiCache: (() => Application) = { () => new GuiceApplicationBuilder()
     .configure(Configuration("play.cache.redis.bindCaches" -> Seq("redis-test", "redis-results"),
       "play.cache.bindCaches" -> Seq("ehcache-test")))
@@ -181,6 +187,18 @@ class RedisCachedSpec extends PlaySpecification with AfterAll {
 
       cache.getOrElse("getOrElseTestSet"){"anotherStringWhichShouldNotHappen"} mustEqual setValue
 
+    }
+
+    "get should return none when redis server is not reachable" in new WithApplication(redisDownCache()) {
+      val cache = app.injector.instanceOf[CacheApi]
+
+      cache.get("get-offline-test") must beNone
+    }
+
+    "set should not raise an exception if redis server is not reachable" in new WithApplication(redisDownCache()) {
+      val cache = app.injector.instanceOf[CacheApi]
+      cache.set("set-offline-test", "value")
+      cache.get("set-offline-test") must beNone
     }
 
   }

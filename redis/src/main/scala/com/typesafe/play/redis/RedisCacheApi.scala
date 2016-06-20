@@ -98,6 +98,8 @@ class RedisCacheApi @Inject()(val namespace: String, sedisPool: Pool, classLoade
     } catch {
       case ex: IOException =>
         Logger.warn("could not serialize key:" + key + " and value:" + value.toString + " ex:" + ex.toString)
+      case ex: Exception =>
+        Logger.warn("Unhandled exception trying to set a value in redis for the following key: " + key, ex)
     } finally {
       if (oos != null) oos.close()
       if (dos != null) dos.close()
