@@ -2,12 +2,12 @@ package com.typesafe.play.redis
 
 import javax.inject.{Inject, Provider}
 
-import org.sedis.Pool
+import org.sedis.{Pool, SentinelPool}
 import play.api.cache.{CacheApi, Cached, NamedCache}
 import play.api.inject._
 import play.api.{Configuration, Environment}
-import play.cache.{CacheApi => JavaCacheApi, DefaultCacheApi => DefaultJavaCacheApi, NamedCacheImpl}
-import redis.clients.jedis.JedisPool
+import play.cache.{NamedCacheImpl, CacheApi => JavaCacheApi, DefaultCacheApi => DefaultJavaCacheApi}
+import redis.clients.jedis.{JedisPool, JedisSentinelPool}
 
 /**
  * Redis cache components for compile time injection
@@ -58,6 +58,8 @@ class RedisModule extends Module {
     val defaultBindings = Seq(
       bind[JedisPool].toProvider[JedisPoolProvider],
       bind[Pool].toProvider[SedisPoolProvider],
+      bind[JedisSentinelPool].toProvider[JedisSentinelPoolProvider],
+      bind[SentinelPool].toProvider[SedisSentinelPoolProvider],
       bind[JavaCacheApi].to[DefaultJavaCacheApi]
     ) ++ bindCaches.flatMap(bindCache)
 
