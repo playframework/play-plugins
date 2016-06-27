@@ -22,7 +22,8 @@ val o = play.api.cache.Cache.getAs[String]("mykey")
 
 * Point to your Redis server using configuration settings  ```redis.host```, ```redis.port```,  ```redis.password``` and ```redis.database``` (defaults: ```localhost```, ```6379```, ```null``` and ```0```).
 * Alternatively, specify a URI-based configuration using ```redis.uri``` (for example: ```redis.uri="redis://user:password@localhost:6379"```).
-* Configure your Sentinels using ```redis.master.name``` and ```redis.sentinel.hosts``` (defaults: ```mymaster```, ```localhost:26379```) .
+* Configure your Sentinels using ```redis.master.name``` and ```redis.sentinel.hosts``` (defaults: ```mymaster```, ```localhost:26379```).
+* If ```redis.<name>.sentinel.mode``` is true (default: ```false```), then the ```<name>``` named cached will always contact the master node. Otherwise, the ```redis.host```, ```redis.port```, or ```redis.uri``` settings will be used.
 * Set the timeout in milliseconds using ```redis.timeout``` (default is 2000).
 * Configure any aspect of the connection pool. See [the documentation for commons-pool2 ```GenericObjectPoolConfig```](https://commons.apache.org/proper/commons-pool/apidocs/org/apache/commons/pool2/impl/GenericObjectPoolConfig.html), the underlying pool implementation, for more information on each setting.
     * redis.pool.maxIdle

@@ -49,7 +49,10 @@ class RedisModule extends Module {
       val namedCache = named(name)
       val cacheApiKey = bind[CacheApi].qualifiedWith(namedCache)
       Seq(
-        cacheApiKey.to(new NamedRedisCacheApiProvider(name, bind[Pool], environment.classLoader)),
+        if (configuration.getBoolean(s"redis.$name.sentinel.mode").getOrElse(false))
+          cacheApiKey.to(new NamedSentinelCacheApiProvider(name, bind[SentinelPool], environment.classLoader))
+        else
+          cacheApiKey.to(new NamedRedisCacheApiProvider(name, bind[Pool], environment.classLoader)),
         bind[JavaCacheApi].qualifiedWith(namedCache).to(new NamedJavaCacheApiProvider(cacheApiKey)),
         bind[Cached].qualifiedWith(namedCache).to(new NamedCachedProvider(cacheApiKey))
       )
@@ -81,6 +84,13 @@ class NamedRedisCacheApiProvider(namespace: String, client: BindingKey[Pool], cl
   @Inject private var injector: Injector = _
   lazy val get: CacheApi = {
     new RedisCacheApi(namespace, injector.instanceOf(client), classLoader)
+  }
+}
+
+class NamedSentinelCacheApiProvider(namespace: String, client: BindingKey[SentinelPool], classLoader: ClassLoader) extends Provider[CacheApi] {
+  @Inject private var injector: Injector = _
+  lazy val get: CacheApi = {
+    new SentinelCacheApi(namespace, injector.instanceOf(client), classLoader)
   }
 }
 
